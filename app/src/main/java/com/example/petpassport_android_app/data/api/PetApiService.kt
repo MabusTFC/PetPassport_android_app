@@ -1,4 +1,4 @@
-package com.example.petpassport_android_app.data
+package com.example.petpassport_android_app.data.api
 
 import retrofit2.http.GET
 
