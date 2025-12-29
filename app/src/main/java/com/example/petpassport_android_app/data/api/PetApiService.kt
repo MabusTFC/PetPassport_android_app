@@ -16,9 +16,11 @@ interface PetApiService {
     suspend fun uploadPet(@Path("petId") petId: Int, @Body photos: List<PhotoDto>): List<PhotoDto>
 
     @GET("api/Pets/{petId}")
-    suspend fun getPet(): PetDto
+    suspend fun getPet(@Path("petId") petId: Int): PetDto
+
     @PUT("/api/Pets/{petId}")
-    suspend fun updatePet(@Path("id") id: Int, @Body pet: PetDto): PetDto
+    suspend fun updatePet(@Path("petId") petId: Int, @Body pet: PetDto): PetDto
+
     @PUT("/api/Pets/{petId}/photos")
     suspend fun updatePetPhotos(@Path("petId") petId: Int, @Body photos: List<PhotoDto>): List<PhotoDto>
 }

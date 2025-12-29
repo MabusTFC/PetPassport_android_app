@@ -13,3 +13,14 @@ fun PetDto.toPet(): Pet{
         photoUrl = this.photo?.firstOrNull()?.url ?: ""
     )
 }
+fun Pet.toDto(): PetDto {
+    return PetDto(
+        id = this.id,
+        name = this.name,
+        breed = this.breed,
+        weight = this.weight,
+        birthDate = this.birthDate,
+        ownerId = 0,
+        photo = null
+    )
+}

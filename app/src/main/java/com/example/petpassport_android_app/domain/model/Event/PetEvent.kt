@@ -1,6 +1,6 @@
 package com.example.petpassport_android_app.domain.model.Event
 
-interface PetEvent {
+sealed interface PetEvent {
     val id: Int
     val title: String
     val date: String
