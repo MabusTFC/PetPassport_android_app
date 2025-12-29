@@ -1,13 +1,10 @@
 package com.example.petpassport_android_app.data.mapper
 
-import com.example.petpassport_android_app.data.dto.DoctorVisitDto
-import com.example.petpassport_android_app.data.dto.TreatmentDto
-import com.example.petpassport_android_app.data.dto.VaccineDto
-import com.example.petpassport_android_app.domain.model.Event.DoctorVisit
-import com.example.petpassport_android_app.domain.model.Event.Treatment
-import com.example.petpassport_android_app.domain.model.Event.Vaccine
+import com.example.petpassport_android_app.data.dto.*
+import com.example.petpassport_android_app.domain.model.Event.*
 
-fun VaccineDto.toVaccine(): Vaccine{
+
+fun VaccineDto.toDomain(): Vaccine {
     return Vaccine(
         id = 0,
         title = this.title,
@@ -17,7 +14,18 @@ fun VaccineDto.toVaccine(): Vaccine{
     )
 }
 
-fun TreatmentDto.toTreatmentDto(): Treatment{
+fun Vaccine.toDto(): VaccineDto {
+    return VaccineDto(
+        title = this.title,
+        eventDate = this.date,
+        reminderEnabled = false,
+        petId = this.petId,
+        medicine = this.medicine,
+        nextVaccinationDate = null
+    )
+}
+
+fun TreatmentDto.toDomain(): Treatment {
     return Treatment(
         id = 0,
         title = this.title,
@@ -29,7 +37,19 @@ fun TreatmentDto.toTreatmentDto(): Treatment{
     )
 }
 
-fun DoctorVisitDto.toDoctorVisit(): DoctorVisit{
+fun Treatment.toDto(): TreatmentDto {
+    return TreatmentDto(
+        title = this.title,
+        eventDate = this.date,
+        petId = this.petId,
+        remedy = this.remedy,
+        parasite = this.parasite,
+        nextTreatmentDate = this.nextTreatmentDate
+    )
+}
+
+
+fun DoctorVisitDto.toDomain(): DoctorVisit {
     return DoctorVisit(
         id = 0,
         title = this.title,
@@ -39,4 +59,55 @@ fun DoctorVisitDto.toDoctorVisit(): DoctorVisit{
         doctor = this.doctor ?: "Не указан",
         diagnosis = this.diagnosis ?: "Нет диагноза"
     )
+}
+
+fun DoctorVisit.toDto(): DoctorVisitDto {
+    return DoctorVisitDto(
+        title = this.title,
+        eventDate = this.date,
+        petId = this.petId,
+        clinic = this.clinic,
+        doctor = this.doctor,
+        diagnosis = this.diagnosis,
+        recommendations = null
+    )
+}
+
+fun EventDto.toDomain(): PetEvent {
+    return when(this.type) {
+        "Vaccine" -> {
+            Vaccine(
+                id = this.id,
+                title = this.title,
+                date = this.eventDate.substringBefore("T"),
+                petId = 0,
+                medicine = this.medicine ?: "Не указано"
+            )
+        }
+
+        "Treatment" -> {
+            Treatment(
+                id = this.id,
+                title = this.title,
+                date = this.eventDate.substringBefore("T"),
+                petId = 0,
+                remedy = this.remedy ?: "Не указано",
+                parasite = "Не указано",
+                nextTreatmentDate = ""
+            )
+        }
+
+        "DoctorVisit" -> {
+            DoctorVisit(
+                id = this.id,
+                title = this.title,
+                date = this.eventDate.substringBefore("T"),
+                petId = 0,
+                clinic = this.clinic ?: "Не указана",
+                doctor = "Не указан",
+                diagnosis = "Нет диагноза"
+            )
+        }
+        else -> throw IllegalArgumentException()
+    }
 }
