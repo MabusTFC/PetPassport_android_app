@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     kotlin("kapt")
+    id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -59,12 +60,33 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
-    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+    var retrofit = "2.9.0"
 
-    implementation("com.google.dagger:hilt-android:2.48")
-    kapt("com.google.dagger:hilt-compiler:2.48")
+    implementation("com.squareup.retrofit2:retrofit:${retrofit}")
+    implementation("com.squareup.retrofit2:converter-gson:${retrofit}")
+
+
+    var okhttp = "4.11.0"
+    implementation("com.squareup.okhttp3:logging-interceptor:${okhttp}")
+
+
+    var hilt = "2.48"
+
+    implementation("com.google.dagger:hilt-android:${hilt}")
+    kapt("com.google.dagger:hilt-compiler:${hilt}")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+
+    val voyager = "1.0.0"
+    implementation("cafe.adriel.voyager:voyager-navigator:$voyager")
+    implementation("cafe.adriel.voyager:voyager-transitions:$voyager")
+    implementation("cafe.adriel.voyager:voyager-screenmodel:${voyager}")
+    implementation("cafe.adriel.voyager:voyager-hilt:$voyager")
+
+
+
+    val coil3 = "3.0.4"
+    implementation("io.coil-kt.coil3:coil-compose:${coil3}")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:${coil3}")
 
 }

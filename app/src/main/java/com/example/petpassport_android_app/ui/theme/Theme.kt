@@ -1,6 +1,7 @@
+// app/src/main/java/com/example/petpassport_android_app/ui/theme/Theme.kt
+
 package com.example.petpassport_android_app.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -21,22 +22,22 @@ private val LightColorScheme = lightColorScheme(
     primary = Purple40,
     secondary = PurpleGrey40,
     tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
 )
+
+// Если хочешь переопределить другие цвета — раскомментируй и добавь их сюда
+// private val DarkColorScheme = darkColorScheme(
+//     primary = Purple80,
+//     secondary = PurpleGrey80,
+//     tertiary = Pink80,
+//     background = Color(0xFF1C1B1F),
+//     surface = Color(0xFF1C1B1F),
+//     ...
+// )
 
 @Composable
 fun PetPassport_android_appTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
+    // Dynamic color доступен на Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
@@ -45,14 +46,13 @@ fun PetPassport_android_appTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = Typography,  // убедись, что у тебя есть объект Typography в Type.kt
         content = content
     )
 }

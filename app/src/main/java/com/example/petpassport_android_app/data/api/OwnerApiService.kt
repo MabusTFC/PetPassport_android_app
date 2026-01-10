@@ -12,8 +12,8 @@ interface OwnerApiService {
     suspend fun registerOwner(@Body owner: OwnerDto): OwnerDto
 
     @GET("api/Owners/{telegramId}/pets")
-    suspend fun getPetsByOwner(@Path("telegramId") telegramId: Long): List<PetDto>
+    suspend fun getPetsByOwner(@Path("telegramId") telegramId: String): List<PetDto>
 
     @GET("api/Owners/by-telegram/{telegramId}")
-    suspend fun getOwnerByTelegramId(@Path("telegramId") telegramId: Long): OwnerDto
+    suspend fun getOwnerByTelegramId(@Path("telegramId") telegramId: String): OwnerDto
 }

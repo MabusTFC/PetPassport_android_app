@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class OwnerDto(
     @SerializedName("ownerId") val ownerId: Int,
-    @SerializedName("telegramId") val telegramId: Long,
+    @SerializedName("telegramId") val telegramId: String,
     @SerializedName("telegramNick") val telegramNick: String,
     @SerializedName("pets") val pets: List<OwnerPetDto>?
 )

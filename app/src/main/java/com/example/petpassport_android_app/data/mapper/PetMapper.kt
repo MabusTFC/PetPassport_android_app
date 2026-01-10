@@ -3,7 +3,7 @@ package com.example.petpassport_android_app.data.mapper
 import com.example.petpassport_android_app.data.dto.PetDto
 import com.example.petpassport_android_app.domain.model.Pet
 
-fun PetDto.toPet(): Pet{
+fun PetDto.toDomain(): Pet{
     return Pet(
         id = id,
         name = name,
@@ -13,14 +13,14 @@ fun PetDto.toPet(): Pet{
         photoUrl = this.photo?.firstOrNull()?.url ?: ""
     )
 }
-fun Pet.toDto(): PetDto {
+fun Pet.toDto(ownerId: Int): PetDto {
     return PetDto(
         id = this.id,
         name = this.name,
         breed = this.breed,
         weight = this.weight,
         birthDate = this.birthDate,
-        ownerId = 0,
+        ownerId = ownerId,
         photo = null
     )
 }
