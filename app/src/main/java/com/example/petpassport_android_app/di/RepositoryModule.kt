@@ -1,5 +1,7 @@
 package com.example.petpassport_android_app.di
 
+import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.hilt.ScreenModelKey
 import com.example.petpassport_android_app.data.repository.AuthRepositoryImpl
 import com.example.petpassport_android_app.data.repository.EventMedicineRepositoryImpl
 import com.example.petpassport_android_app.data.repository.OwnerRepositoryImpl
@@ -8,10 +10,13 @@ import com.example.petpassport_android_app.domain.repository.AuthRepository
 import com.example.petpassport_android_app.domain.repository.EventMedicineRepository
 import com.example.petpassport_android_app.domain.repository.OwnerRepository
 import com.example.petpassport_android_app.domain.repository.PetRepository
+import com.example.petpassport_android_app.presentation.screens.home.PetListScreenModel
+import com.example.petpassport_android_app.presentation.screens.login.LoginScreenModel
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dagger.multibindings.IntoMap
 import javax.inject.Singleton
 
 @Module

@@ -11,6 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import cafe.adriel.voyager.navigator.Navigator
+import com.example.petpassport_android_app.navigation.LoginNavigationScreen
 import com.example.petpassport_android_app.ui.theme.PetPassport_android_appTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -21,12 +23,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PetPassport_android_appTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                Navigator(screen = LoginNavigationScreen())
             }
         }
     }
@@ -44,6 +41,6 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Composable
 fun GreetingPreview() {
     PetPassport_android_appTheme {
-        Greeting("Android")
+        Greeting("MABUS")
     }
 }

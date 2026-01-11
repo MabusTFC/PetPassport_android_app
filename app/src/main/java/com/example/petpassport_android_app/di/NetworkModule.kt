@@ -1,5 +1,7 @@
 package com.example.petpassport_android_app.di
 
+import android.content.Context
+import android.content.SharedPreferences
 import com.example.petpassport_android_app.data.api.AuthApiService
 import com.example.petpassport_android_app.data.api.DoctorVisitApiService
 import com.example.petpassport_android_app.data.api.EventsApiService
@@ -10,6 +12,7 @@ import com.example.petpassport_android_app.data.api.VaccineApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -77,4 +80,14 @@ object NetworkModule {
     fun provideAuthApi(retrofit: Retrofit): AuthApiService {
         return retrofit.create(AuthApiService::class.java)
     }
+
+    //Сохр данных в файл
+    @Provides
+    @Singleton
+    fun provideSharedPreferences(
+        @ApplicationContext context: Context
+    ): SharedPreferences {
+        return context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+    }
+
 }
