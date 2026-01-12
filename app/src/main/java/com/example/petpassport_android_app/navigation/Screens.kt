@@ -74,17 +74,18 @@ class PetProfileNavigationScreen(
         val model = getScreenModel<PetProfileScreenModel>()
         val state by model.state.collectAsState()
 
-
-        LaunchedEffect(Unit) {
+        LaunchedEffect(petId) {
             model.loadPetById(petId)
         }
 
         PetProfileScreenContent(
             state = state,
-            onBack = { navigator.pop() }
+            onBack = { navigator.pop() }, // <-- здесь обязательно лямбда
+            onUpdatePet = { model.updatePet(it) } // если добавил сохранение
         )
     }
 }
+
 
 
 

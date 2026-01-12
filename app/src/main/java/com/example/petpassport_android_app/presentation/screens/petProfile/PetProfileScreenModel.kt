@@ -19,6 +19,7 @@ class PetProfileScreenModel @Inject constructor(
         object Loading : State()
         data class Success(val pet: Pet) : State()
         data class Error(val message: String) : State()
+        object Saving : State()
     }
 
     private val _state = MutableStateFlow<State>(State.Loading)
@@ -26,6 +27,7 @@ class PetProfileScreenModel @Inject constructor(
 
     fun loadPetById(petId: Int) {
         screenModelScope.launch {
+            _state.value = State.Loading
             try {
                 val pet = petRepository.getPetById(petId)
                 if (pet == null) {
@@ -38,5 +40,18 @@ class PetProfileScreenModel @Inject constructor(
             }
         }
     }
+
+    fun updatePet(updatedPet: Pet) {
+        screenModelScope.launch {
+            val result = petRepository.updatePet(updatedPet.id, updatedPet)
+            if (result != null) {
+                _state.value = State.Success(result)
+            } else {
+                _state.value = State.Error("Не удалось сохранить изменения")
+            }
+        }
+    }
+
 }
+
 
