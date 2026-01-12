@@ -3,6 +3,7 @@ package com.example.petpassport_android_app.navigation
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,6 +18,9 @@ import com.example.petpassport_android_app.presentation.screens.login.LoginScree
 import com.example.petpassport_android_app.presentation.screens.login.LoginScreenModel
 import com.example.petpassport_android_app.presentation.screens.home.PetListScreenContent
 import com.example.petpassport_android_app.presentation.screens.home.PetListScreenModel
+import com.example.petpassport_android_app.presentation.screens.petProfile.PetProfileScreenContent
+import com.example.petpassport_android_app.presentation.screens.petProfile.PetProfileScreenModel
+
 
 class LoginNavigationScreen(): Screen {
     @Composable
@@ -40,16 +44,48 @@ class LoginNavigationScreen(): Screen {
     }
 }
 
-class PetListNavigationScreen(): Screen{
+class PetListNavigationScreen() : Screen {
     @Composable
     override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
         val model = getScreenModel<PetListScreenModel>()
         val state by model.state.collectAsState()
 
         PetListScreenContent(
             state = state,
-            onRetry = { model.retry() }
+            onRetry = { model.retry() },
+            onAddPet = { model.addPet(it) },
+            onPetProfile = { petId ->
+                navigator.push(PetProfileNavigationScreen(petId)) // здесь происходит реальный переход
+            }
         )
     }
-
 }
+
+
+
+class PetProfileNavigationScreen(
+    private val petId: Int
+) : Screen {
+
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val model = getScreenModel<PetProfileScreenModel>()
+        val state by model.state.collectAsState()
+
+
+        LaunchedEffect(Unit) {
+            model.loadPetById(petId)
+        }
+
+        PetProfileScreenContent(
+            state = state,
+            onBack = { navigator.pop() }
+        )
+    }
+}
+
+
+
+

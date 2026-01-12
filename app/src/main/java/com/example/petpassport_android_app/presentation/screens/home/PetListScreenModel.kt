@@ -13,6 +13,7 @@ import javax.inject.Inject
 
 class PetListScreenModel @Inject constructor(
     val repository: OwnerRepository,
+    val petRepository: com.example.petpassport_android_app.domain.repository.PetRepository,
     val sharedPreferences: SharedPreferences
 ): ScreenModel {
 
@@ -47,6 +48,16 @@ class PetListScreenModel @Inject constructor(
                 _state.value = if (pets.isEmpty()) PetsState.Empty else PetsState.Success(pets)
             } catch (e: Exception) {
                 _state.value = PetsState.Error(e.message ?: "Ошибка загрузки. Проверьте интернет.")
+            }
+        }
+    }
+    fun addPet(pet: Pet) {
+        screenModelScope.launch {
+            try {
+                petRepository.createPet(pet)
+                loadPets()
+            } catch (e: Exception) {
+                _state.value = PetsState.Error("Ошибка сохранения питомца")
             }
         }
     }
