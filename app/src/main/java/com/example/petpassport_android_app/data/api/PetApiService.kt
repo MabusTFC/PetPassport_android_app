@@ -1,7 +1,7 @@
 package com.example.petpassport_android_app.data.api
 
-import com.example.petpassport_android_app.data.dto.PetDto
-import com.example.petpassport_android_app.data.dto.PhotoDto
+import com.example.petpassport_android_app.data.dto.User.PetDto
+import com.example.petpassport_android_app.data.dto.User.PhotoDto
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST

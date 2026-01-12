@@ -1,6 +1,6 @@
 package com.example.petpassport_android_app.data.mapper
 
-import com.example.petpassport_android_app.data.dto.PetDto
+import com.example.petpassport_android_app.data.dto.User.PetDto
 import com.example.petpassport_android_app.domain.model.Pet
 
 fun PetDto.toDomain(): Pet{

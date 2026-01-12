@@ -1,6 +1,6 @@
 package com.example.petpassport_android_app.data.api
 
-import com.example.petpassport_android_app.data.dto.EventDto
+import com.example.petpassport_android_app.data.dto.Event.EventDto
 import retrofit2.http.GET
 import retrofit2.http.Path
 

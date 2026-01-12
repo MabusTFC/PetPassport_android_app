@@ -1,6 +1,6 @@
 package com.example.petpassport_android_app.data.api
 
-import com.example.petpassport_android_app.data.dto.VaccineDto
+import com.example.petpassport_android_app.data.dto.Event.VaccineDto
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET

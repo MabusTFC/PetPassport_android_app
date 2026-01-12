@@ -1,6 +1,10 @@
 package com.example.petpassport_android_app.data.mapper
 
 import com.example.petpassport_android_app.data.dto.*
+import com.example.petpassport_android_app.data.dto.Event.DoctorVisitDto
+import com.example.petpassport_android_app.data.dto.Event.EventDto
+import com.example.petpassport_android_app.data.dto.Event.TreatmentDto
+import com.example.petpassport_android_app.data.dto.Event.VaccineDto
 import com.example.petpassport_android_app.domain.model.Event.*
 
 

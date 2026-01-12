@@ -1,4 +1,4 @@
-package com.example.petpassport_android_app.data.dto
+package com.example.petpassport_android_app.data.dto.User
 
 import com.google.gson.annotations.SerializedName
 

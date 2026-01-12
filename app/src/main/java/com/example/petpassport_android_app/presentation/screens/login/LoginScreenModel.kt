@@ -4,11 +4,9 @@ import android.content.SharedPreferences
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.navigator.Navigator
-import com.example.petpassport_android_app.data.dto.AuthStatusDto
+import com.example.petpassport_android_app.domain.model.Owner
 import com.example.petpassport_android_app.domain.repository.AuthRepository
-import com.example.petpassport_android_app.domain.repository.OwnerRepository
 import com.example.petpassport_android_app.navigation.PetListNavigationScreen
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -16,14 +14,12 @@ import javax.inject.Inject
 
 class LoginScreenModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val ownerRepository: OwnerRepository,
     private val sharedPreferences: SharedPreferences
 ) : ScreenModel {
 
     sealed class State {
         object Idle : State()
         object Loading : State()
-        object WaitingForTelegram : State()
         object Success : State()
         data class Error(val message: String) : State()
     }
@@ -31,55 +27,52 @@ class LoginScreenModel @Inject constructor(
     private val _state = MutableStateFlow<State>(State.Idle)
     val state = _state.asStateFlow()
 
-    fun onLoginClicked(
-        openTelegram: (String) -> Unit,
-        navigator: Navigator
-    ) {
+    fun login(login: String, password: String, navigator: Navigator) {
         screenModelScope.launch {
+            _state.value = State.Loading
             try {
-                _state.value = State.Loading
-
-                val uuid = authRepository.startLoginSession()
-                val link = "https://t.me/MyPetPassportBot?start=$uuid"
-
-                openTelegram(link)
-
-                _state.value = State.WaitingForTelegram
-                pollAuthStatus(uuid, navigator)
-
+                val owner = authRepository.login(login, password)
+                if (owner != null) {
+                    saveOwnerData(owner, password)
+                    _state.value = State.Success
+                    navigator.push(PetListNavigationScreen())
+                } else {
+                    _state.value = State.Error("Неверный логин или пароль")
+                }
             } catch (e: Exception) {
                 _state.value = State.Error("Ошибка соединения: ${e.message}")
             }
         }
     }
 
-    private suspend fun pollAuthStatus(uuid: String, navigator: Navigator) {
-        repeat(30) {
-            delay(2000)
-
+    fun register(login: String, password: String, navigator: Navigator) {
+        screenModelScope.launch {
+            _state.value = State.Loading
             try {
-                val result: AuthStatusDto = authRepository.checkLoginStatus(uuid)
-
-                if (result.status == "SUCCESS" && result.telegramId != null) {
-                    sharedPreferences.edit()
-                        .putString("access_token", result.accessToken)
-                        .putString("telegram_id", result.telegramId)
-                        .apply()
-
-                    val owner = ownerRepository.getOwnerByTelegramId(result.telegramId)
-                    owner?.let {
-                        sharedPreferences.edit()
-                            .putInt("owner_id", it.id)
-                            .apply()
-                    }
-
+                val owner = authRepository.register(login, password)
+                if (owner != null) {
+                    saveOwnerData(owner, password)
                     _state.value = State.Success
                     navigator.push(PetListNavigationScreen())
-                    return
+                } else {
+                    _state.value = State.Error("Ошибка регистрации: логин может быть занят")
                 }
-            } catch (e: Exception) { }
+            } catch (e: Exception) {
+                _state.value = State.Error("Ошибка соединения: ${e.message}")
+            }
         }
+    }
 
-        _state.value = State.Error("Время ожидания истекло")
+    private fun saveOwnerData(owner: Owner, password: String) {
+        sharedPreferences.edit()
+            .putInt("owner_id", owner.id ?: -1)
+            .putString("login", owner.login)
+            .putString("password", password)
+            .putString("telegram_id", owner.telegramId)
+            .apply()
+    }
+
+    fun resetState() {
+        _state.value = State.Idle
     }
 }
