@@ -2,6 +2,7 @@ package com.example.petpassport_android_app.data.mapper
 
 import com.example.petpassport_android_app.data.dto.User.OwnerDto
 import com.example.petpassport_android_app.data.dto.User.OwnerPetDto
+import com.example.petpassport_android_app.data.dto.User.PetSummaryDto
 import com.example.petpassport_android_app.domain.model.Owner
 import com.example.petpassport_android_app.domain.model.Pet
 
@@ -34,3 +35,15 @@ fun OwnerPetDto.toDomain(): Pet {
         photoUrl = ""
     )
 }
+
+fun PetSummaryDto.toDomain(): Pet {
+    return Pet(
+        id = id,
+        name = name,
+        breed = "",
+        birthDate = "",
+        weight = 0.0,
+        photoUrl = ""
+    )
+}
+

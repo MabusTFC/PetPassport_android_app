@@ -4,7 +4,5 @@ import com.example.petpassport_android_app.domain.model.Owner
 import com.example.petpassport_android_app.domain.model.Pet
 
 interface OwnerRepository {
-    suspend fun registerOwner(owner: Owner): Owner?
-    suspend fun getPetsByOwner(telegramId: String): List<Pet>
-    suspend fun getOwnerByTelegramId(telegramId: String): Owner?
+    suspend fun getPetsByOwner(ownerId: Int): List<Pet>
 }

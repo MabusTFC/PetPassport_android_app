@@ -4,6 +4,7 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.hilt.ScreenModelKey
 import com.example.petpassport_android_app.presentation.screens.home.PetListScreenModel
 import com.example.petpassport_android_app.presentation.screens.login.LoginScreenModel
+import com.example.petpassport_android_app.presentation.screens.petProfile.PetProfileScreenModel
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -24,4 +25,9 @@ abstract class ScreenModelModule {
     @IntoMap
     @ScreenModelKey(PetListScreenModel::class)
     abstract fun bindPetListScreenModel(model: PetListScreenModel): ScreenModel
+
+    @Binds
+    @IntoMap
+    @ScreenModelKey(PetProfileScreenModel::class)
+    abstract fun bindPetProfileScreenModel(model: PetProfileScreenModel): ScreenModel
 }

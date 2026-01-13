@@ -2,7 +2,6 @@ package com.example.petpassport_android_app.di
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.example.petpassport_android_app.data.api.AuthApiService
 import com.example.petpassport_android_app.data.api.DoctorVisitApiService
 import com.example.petpassport_android_app.data.api.EventsApiService
 import com.example.petpassport_android_app.data.api.OwnerApiService
@@ -74,12 +73,6 @@ object NetworkModule {
         return retrofit.create(DoctorVisitApiService::class.java)
     }
 
-    //Авторизация пользователя
-    @Provides
-    @Singleton
-    fun provideAuthApi(retrofit: Retrofit): AuthApiService {
-        return retrofit.create(AuthApiService::class.java)
-    }
 
     //Сохр данных в файл
     @Provides

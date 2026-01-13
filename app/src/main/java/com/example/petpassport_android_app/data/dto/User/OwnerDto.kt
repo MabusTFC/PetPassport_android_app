@@ -14,3 +14,19 @@ data class OwnerPetDto(
     @SerializedName("id") val id: Int,
     @SerializedName("name") val name: String
 )
+
+data class OwnerLoginRegisterDto(
+    @SerializedName("login") val login: String,
+    @SerializedName("password") val password: String,
+)
+
+data class OwnerLoginResultDto(
+    @SerializedName("ownerId") val ownerId: Int
+)
+
+data class PetSummaryDto(
+    val id: Int,
+    val name: String
+)
+
+

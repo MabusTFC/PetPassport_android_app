@@ -68,7 +68,6 @@ class LoginScreenModel @Inject constructor(
             .putInt("owner_id", owner.id ?: -1)
             .putString("login", owner.login)
             .putString("password", password)
-            .putString("telegram_id", owner.telegramId)
             .apply()
     }
 

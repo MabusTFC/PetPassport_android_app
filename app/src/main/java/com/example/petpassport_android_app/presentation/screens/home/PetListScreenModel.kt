@@ -39,18 +39,22 @@ class PetListScreenModel @Inject constructor(
         screenModelScope.launch {
             _state.value = PetsState.Loading
             try {
-                val telegramId = sharedPreferences.getString("telegram_id", null)
-                if (telegramId.isNullOrBlank()) {
-                    _state.value = PetsState.Error("Не авторизован. Войдите через Telegram.")
+
+                val ownerId = sharedPreferences.getInt("owner_id", -1)
+                if (ownerId == -1) {
+                    _state.value = PetsState.Error("Не авторизован")
                     return@launch
                 }
-                val pets = repository.getPetsByOwner(telegramId)
+
+                val pets = repository.getPetsByOwner(ownerId)
+
                 _state.value = if (pets.isEmpty()) PetsState.Empty else PetsState.Success(pets)
             } catch (e: Exception) {
-                _state.value = PetsState.Error(e.message ?: "Ошибка загрузки. Проверьте интернет.")
+                _state.value = PetsState.Error(e.message ?: "Ошибка загрузки")
             }
         }
     }
+
     fun addPet(pet: Pet) {
         screenModelScope.launch {
             try {
