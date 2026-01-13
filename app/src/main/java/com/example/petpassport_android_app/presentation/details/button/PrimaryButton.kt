@@ -17,7 +17,7 @@ import com.example.petpassport_android_app.presentation.theme.AppColors
 fun PrimaryButton(text: String, onClick: () -> Unit) {
     Button(
         onClick = onClick,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = AppColors.Primary
         ),

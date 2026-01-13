@@ -9,5 +9,4 @@ interface EventsApiService {
     @GET("api/events/upcoming/{petId}")
     suspend fun getUpcomingEvents(@Path("petId") petId: Int): List<EventDto>
 
-
 }
