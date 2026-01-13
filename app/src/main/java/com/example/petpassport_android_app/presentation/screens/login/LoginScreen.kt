@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.example.petpassport_android_app.R
 import com.example.petpassport_android_app.presentation.details.Card.*
 import com.example.petpassport_android_app.presentation.details.button.PrimaryButton
-import com.example.petpassport_android_app.presentation.theme.AppColors
+
 
 @Composable
 fun LoginScreenContent(
@@ -31,14 +31,7 @@ fun LoginScreenContent(
     onLoginClick: () -> Unit,
     onRegisterClick: () -> Unit
 ) {
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AppColors.Background)
-            .padding(32.dp),
-        contentAlignment = Alignment.Center
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(id = R.drawable.background_empty_pets),
             contentDescription = null,
@@ -46,41 +39,55 @@ fun LoginScreenContent(
             contentScale = ContentScale.Crop
         )
 
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            TextField(
-                value = login,
-                onValueChange = onLoginChange,
-                label = { Text("Логин") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            TextField(
-                value = password,
-                onValueChange = onPasswordChange,
-                label = { Text("Пароль") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(32.dp),
+            contentAlignment = Alignment.Center
+        ) {
 
-            when (state) {
-                is LoginScreenModel.State.Idle -> {
-                    PrimaryButton(text = "Войти", onClick = onLoginClick)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    PrimaryButton(text = "Зарегистрироваться", onClick = onRegisterClick)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.offset(y = 21.dp)
+            ){
+                TextField(
+                    value = login,
+                    onValueChange = onLoginChange,
+                    label = { Text("Логин") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                )
+                Spacer(modifier = Modifier.height(5.dp))
+                TextField(
+                    value = password,
+                    onValueChange = onPasswordChange,
+                    label = { Text("Пароль") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                )
+                Spacer(modifier = Modifier.height(5.dp))
+
+                when (state) {
+                    is LoginScreenModel.State.Idle -> {
+                        PrimaryButton(text = "Войти", onClick = onLoginClick)
+                        Spacer(modifier = Modifier.height(5.dp))
+                        PrimaryButton(text = "Зарегистрироваться", onClick = onRegisterClick)
+                    }
+
+                    is LoginScreenModel.State.Loading -> LoadingCard("Подождите…")
+                    is LoginScreenModel.State.Success -> SuccessCard()
+                    is LoginScreenModel.State.Error -> ErrorCard(message = state.message)
                 }
-                is LoginScreenModel.State.Loading -> LoadingCard("Подождите…")
-                is LoginScreenModel.State.Success -> SuccessCard()
-                is LoginScreenModel.State.Error -> ErrorCard(message = state.message)
             }
         }
     }
