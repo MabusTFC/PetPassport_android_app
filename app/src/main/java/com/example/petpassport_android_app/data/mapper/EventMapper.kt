@@ -79,7 +79,7 @@ fun DoctorVisit.toDto(): DoctorVisitDto {
 
 fun EventDto.toDomain(): PetEvent {
     return when(this.type) {
-        "Vaccine" -> {
+        "vaccine" -> {
             Vaccine(
                 id = this.id,
                 title = this.title,
@@ -89,7 +89,7 @@ fun EventDto.toDomain(): PetEvent {
             )
         }
 
-        "Treatment" -> {
+        "treatment" -> {
             Treatment(
                 id = this.id,
                 title = this.title,
@@ -101,7 +101,7 @@ fun EventDto.toDomain(): PetEvent {
             )
         }
 
-        "DoctorVisit" -> {
+        "doctor-visit" -> {
             DoctorVisit(
                 id = this.id,
                 title = this.title,
