@@ -1,11 +1,14 @@
 package com.example.petpassport_android_app.presentation.screens.events
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.petpassport_android_app.domain.model.Event.*
@@ -36,7 +39,10 @@ fun AddEventsDialog(
         onDismissRequest = onDismiss,
         title = { Text("Добавить процедуру") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+
+            ){
 
                 DropdownMenuBox(
                     selected = selectedType,
@@ -44,21 +50,6 @@ fun AddEventsDialog(
                 )
 
                 TextFieldCard(value = title, onValueChange = { title = it }, text = "Название")
-                TextFieldCard(value = date, onValueChange = { date = it }, text = "Дата")
-                TextFieldCard(value = extra, onValueChange = { extra = it },
-                    text = when (selectedType) {
-                        "VACCINE"   -> "Препарат"
-                        "TREATMENT" -> "Лекарство"
-                        else        -> "Врач"
-                    }
-                )
-                OutlinedTextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text("Название") }
-                )
-
-                // 📅 Поле выбора даты
                 OutlinedTextField(
                     value = date,
                     onValueChange = {},
@@ -72,22 +63,23 @@ fun AddEventsDialog(
                                 contentDescription = "Выбрать дату"
                             )
                         }
+                    },
+                    shape = RoundedCornerShape(24.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                )
+                TextFieldCard(value = extra, onValueChange = { extra = it },
+                    text = when (selectedType) {
+                        "VACCINE"   -> "Препарат"
+                        "TREATMENT" -> "Лекарство"
+                        else        -> "Врач"
                     }
                 )
 
-                OutlinedTextField(
-                    value = extra,
-                    onValueChange = { extra = it },
-                    label = {
-                        Text(
-                            when (selectedType) {
-                                "VACCINE" -> "Препарат"
-                                "TREATMENT" -> "Лекарство"
-                                else -> "Врач"
-                            }
-                        )
-                    }
-                )
+
             }
         },
         confirmButton = {
