@@ -83,15 +83,11 @@ class PetProfileNavigationScreen(
         PetProfileScreenContent(
             state = state,
             onBack = { navigator.pop() },
-            onEditProfile = {
-                model.enableEditMode()
-            },
-            onOpenEvents = { id ->
-                navigator.push(EventsNavigationScreen(id))
-            },
-            //onAddEvent = { id ->
-            //    navigator.push(EventsNavigationScreen(id))
-            //}
+            onEditProfile = { model.enableEditMode() },
+            onSavePet = { model.savePet(it) },
+            onOpenEvents = {
+                navigator.push(EventsNavigationScreen(petId))
+            }
         )
     }
 }

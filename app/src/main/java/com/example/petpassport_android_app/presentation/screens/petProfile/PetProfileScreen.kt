@@ -11,7 +11,7 @@ import com.example.petpassport_android_app.domain.model.Event.PetEvent
 import com.example.petpassport_android_app.domain.model.Pet
 import com.example.petpassport_android_app.presentation.details.Card.ErrorCard
 import com.example.petpassport_android_app.presentation.details.Card.LoadingCard
-
+import com.example.petpassport_android_app.presentation.details.Card.PetProfileEditCard
 
 
 @Composable
@@ -19,38 +19,44 @@ fun PetProfileScreenContent(
     state: PetProfileScreenModel.State,
     onBack: () -> Unit,
     onEditProfile: () -> Unit,
-    onOpenEvents: (Int) -> Unit,
-    //onAddEvent: (PetEvent) -> Unit
+    onSavePet: (Pet) -> Unit,
+    onOpenEvents: () -> Unit
 ) {
     when (state) {
         is PetProfileScreenModel.State.Loading -> {
-            LoadingCard("Загружаем профиль питомца…")
+            LoadingCard("Загрузка профиля…")
         }
 
         is PetProfileScreenModel.State.Error -> {
             ErrorCard(state.message)
         }
 
-        is PetProfileScreenModel.State.Success -> {
+        is PetProfileScreenModel.State.View -> {
             PetProfileCard(
                 pet = state.pet,
                 onBack = onBack,
                 onEditProfile = onEditProfile,
-                onOpenEvents = { onOpenEvents(state.pet.id) },
-                //onAddEvent = { onAddEvent() }
+                onOpenEvents = onOpenEvents
             )
         }
 
-        else -> {}
+        is PetProfileScreenModel.State.Edit -> {
+            PetProfileEditCard(
+                pet = state.pet,
+                onBack = onBack,
+                onSave = onSavePet
+            )
+        }
     }
 }
 
 
 
 
-@Preview(showBackground = true)
+
+@Preview(showBackground = true, name = "View")
 @Composable
-fun PetProfileScreenPreview() {
+fun PetProfileScreenViewPreview() {
     val samplePet = Pet(
         id = 1,
         name = "Бастер",
@@ -61,11 +67,32 @@ fun PetProfileScreenPreview() {
     )
 
     PetProfileScreenContent(
-        state = PetProfileScreenModel.State.Success(samplePet),
+        state = PetProfileScreenModel.State.View(samplePet),
         onBack = {},
         onEditProfile = {},
-        onOpenEvents = {},
-        //onAddEvent = {}
+        onSavePet = {},
+        onOpenEvents = {}
+    )
+}
+
+@Preview(showBackground = true, name = "Edit")
+@Composable
+fun PetProfileScreenEditPreview() {
+    val samplePet = Pet(
+        id = 1,
+        name = "Бастер",
+        breed = "Лабрадор",
+        weight = 25.0,
+        birthDate = "12.03.2020",
+        photoUrl = ""
+    )
+
+    PetProfileScreenContent(
+        state = PetProfileScreenModel.State.Edit(samplePet),
+        onBack = {},
+        onEditProfile = {},
+        onSavePet = {},
+        onOpenEvents = {}
     )
 }
 

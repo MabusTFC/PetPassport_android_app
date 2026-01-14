@@ -31,21 +31,21 @@ class MedicalHistoryScreenModel @Inject constructor(
 
     val state = _state.asStateFlow()
 
-    fun loadPetById(petId: Int) {
-        screenModelScope.launch {
-            _state.value = PetProfileScreenModel.State.Loading
-            try {
-                val pet = petRepository.getPetById(petId)
-                if (pet == null) {
-                    _state.value = PetProfileScreenModel.State.Error("Питомец не найден")
-                } else {
-                    _state.value = PetProfileScreenModel.State.Success(pet)
-                }
-            } catch (e: Exception) {
-                _state.value = PetProfileScreenModel.State.Error("Ошибка загрузки")
-            }
-        }
-    }
+    //fun loadPetById(petId: Int) {
+    //    screenModelScope.launch {
+    //        _state.value = PetProfileScreenModel.State.Loading
+    //        try {
+    //            val pet = petRepository.getPetById(petId)
+    //            if (pet == null) {
+    //                _state.value = PetProfileScreenModel.State.Error("Питомец не найден")
+    //            } else {
+    //                _state.value = PetProfileScreenModel.State.Success(pet)
+    //            }
+    //        } catch (e: Exception) {
+    //            _state.value = PetProfileScreenModel.State.Error("Ошибка загрузки")
+    //        }
+    //    }
+    //}
 
 
 }

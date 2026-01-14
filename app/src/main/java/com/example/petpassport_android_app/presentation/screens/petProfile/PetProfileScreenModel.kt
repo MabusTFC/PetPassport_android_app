@@ -16,52 +16,39 @@ class PetProfileScreenModel @Inject constructor(
 
     sealed class State {
         object Loading : State()
-        data class Success(
-            val pet: Pet,
-            val isEditing: Boolean = false
-        ) : State()
+        data class View(val pet: Pet) : State()
+        data class Edit(val pet: Pet) : State()
         data class Error(val message: String) : State()
     }
-
-    fun enableEditMode() {
-        val current = _state.value
-        if (current is State.Success) {
-            _state.value = current.copy(isEditing = true)
-        }
-    }
-
-
 
     private val _state = MutableStateFlow<State>(State.Loading)
     val state = _state.asStateFlow()
 
     fun loadPetById(petId: Int) {
         screenModelScope.launch {
-            _state.value = State.Loading
-            try {
-                val pet = petRepository.getPetById(petId)
-                if (pet == null) {
-                    _state.value = State.Error("Питомец не найден")
-                } else {
-                    _state.value = State.Success(pet)
-                }
-            } catch (e: Exception) {
-                _state.value = State.Error("Ошибка загрузки")
-            }
-        }
-    }
-
-    fun updatePet(updatedPet: Pet) {
-        screenModelScope.launch {
-            val result = petRepository.updatePet(updatedPet.id, updatedPet)
-            if (result != null) {
-                _state.value = State.Success(result)
+            val pet = petRepository.getPetById(petId)
+            if (pet != null) {
+                _state.value = State.View(pet)
             } else {
-                _state.value = State.Error("Не удалось сохранить изменения")
+                _state.value = State.Error("Питомец не найден")
             }
         }
     }
 
+    fun enableEditMode() {
+        val current = _state.value
+        if (current is State.View) {
+            _state.value = State.Edit(current.pet)
+        }
+    }
+
+    fun savePet(updatedPet: Pet) {
+        screenModelScope.launch {
+            petRepository.updatePet(updatedPet.id, updatedPet)
+            _state.value = State.View(updatedPet)
+        }
+    }
 }
+
 
 
