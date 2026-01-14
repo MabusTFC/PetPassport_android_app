@@ -69,7 +69,9 @@ fun PetListScreenContent(
                 onClick = { showDialog = true },
                 containerColor = AppColors.Primary,
                 contentColor = AppColors.White,
-                modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Добавить")
             }

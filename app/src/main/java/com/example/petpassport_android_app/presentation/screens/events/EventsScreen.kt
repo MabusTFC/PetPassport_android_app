@@ -86,8 +86,8 @@ fun EventsScreenContent(
             if (showDialog) {
                 AddEventsDialog(
                     onDismiss = { showDialog = false },
-                    onAdd = {
-                        onAddEvent(it)
+                    onAdd = { newEvent ->
+                        onAddEvent(newEvent)
                         showDialog = false
                     }
                 )

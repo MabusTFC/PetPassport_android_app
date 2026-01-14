@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.petpassport_android_app.domain.model.Event.*
+import com.example.petpassport_android_app.presentation.details.Card.TextFieldCard
 
 @Composable
 fun AddEventsDialog(
@@ -28,17 +30,15 @@ fun AddEventsDialog(
                     onSelected = { selectedType = it }
                 )
 
-                OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Название") })
-                OutlinedTextField(value = date, onValueChange = { date = it }, label = { Text("Дата") })
-                OutlinedTextField(value = extra, onValueChange = { extra = it }, label = {
-                    Text(
-                        when (selectedType) {
-                            "VACCINE" -> "Препарат"
-                            "TREATMENT" -> "Лекарство"
-                            else -> "Врач"
-                        }
-                    )
-                })
+                TextFieldCard(value = title, onValueChange = { title = it }, text = "Название")
+                TextFieldCard(value = date, onValueChange = { date = it }, text = "Дата")
+                TextFieldCard(value = extra, onValueChange = { extra = it },
+                    text = when (selectedType) {
+                        "VACCINE"   -> "Препарат"
+                        "TREATMENT" -> "Лекарство"
+                        else        -> "Врач"
+                    }
+                )
             }
         },
         confirmButton = {
@@ -90,3 +90,22 @@ private fun DropdownMenuBox(
         }
     }
 }
+
+@Preview
+@Composable
+fun AddEventsDialogPreview() {
+    MaterialTheme {
+        Surface {
+            AddEventsDialog(
+                onDismiss = {},
+                onAdd = {}
+            )
+        }
+    }
+}
+
+
+
+
+
+
