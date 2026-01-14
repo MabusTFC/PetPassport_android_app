@@ -1,7 +1,5 @@
 package com.example.petpassport_android_app.navigation
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -9,11 +7,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.hilt.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.example.petpassport_android_app.domain.model.Event.DoctorVisit
+import com.example.petpassport_android_app.domain.model.Event.Treatment
+import com.example.petpassport_android_app.domain.model.Event.Vaccine
+import com.example.petpassport_android_app.presentation.screens.events.EventsScreenContent
+import com.example.petpassport_android_app.presentation.screens.events.EventsScreenModel
 import com.example.petpassport_android_app.presentation.screens.login.LoginScreenContent
 import com.example.petpassport_android_app.presentation.screens.login.LoginScreenModel
 import com.example.petpassport_android_app.presentation.screens.home.PetListScreenContent
@@ -80,11 +82,49 @@ class PetProfileNavigationScreen(
 
         PetProfileScreenContent(
             state = state,
-            onBack = { navigator.pop() }, // <-- здесь обязательно лямбда
-            onUpdatePet = { model.updatePet(it) } // если добавил сохранение
+            onBack = { navigator.pop() },
+            onEditProfile = {
+                model.enableEditMode()
+            },
+            onOpenEvents = { id ->
+                navigator.push(EventsNavigationScreen(id))
+            },
+            //onAddEvent = { id ->
+            //    navigator.push(EventsNavigationScreen(id))
+            //}
         )
     }
 }
+
+
+class EventsNavigationScreen(
+    private val petId: Int
+) : Screen {
+
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val model = getScreenModel<EventsScreenModel>()
+        val state by model.state.collectAsState()
+
+        LaunchedEffect(petId) {
+            model.loadEvents(petId)
+        }
+
+        EventsScreenContent(
+            state = state,
+            onBack = { navigator.pop() },
+            onAddEvent = { event ->
+                when (event) {
+                    is Vaccine -> model.addVaccine(event.copy(petId = petId), petId)
+                    is Treatment -> model.addTreatment(event.copy(petId = petId), petId)
+                    is DoctorVisit -> model.addDoctorVisit(event.copy(petId = petId), petId)
+                }
+            }
+        )
+    }
+}
+
 
 
 

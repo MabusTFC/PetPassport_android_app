@@ -5,7 +5,6 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.petpassport_android_app.domain.model.Pet
 import com.example.petpassport_android_app.domain.repository.PetRepository
-import dagger.assisted.Assisted
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -17,10 +16,21 @@ class PetProfileScreenModel @Inject constructor(
 
     sealed class State {
         object Loading : State()
-        data class Success(val pet: Pet) : State()
+        data class Success(
+            val pet: Pet,
+            val isEditing: Boolean = false
+        ) : State()
         data class Error(val message: String) : State()
-        object Saving : State()
     }
+
+    fun enableEditMode() {
+        val current = _state.value
+        if (current is State.Success) {
+            _state.value = current.copy(isEditing = true)
+        }
+    }
+
+
 
     private val _state = MutableStateFlow<State>(State.Loading)
     val state = _state.asStateFlow()
