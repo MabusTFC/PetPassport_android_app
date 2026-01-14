@@ -1,4 +1,4 @@
 package com.example.petpassport_android_app.presentation.theme
 
-object AppLogo {
-}
+import com.example.petpassport_android_app.R
+

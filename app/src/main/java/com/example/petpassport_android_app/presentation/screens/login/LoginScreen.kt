@@ -50,31 +50,10 @@ fun LoginScreenContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.offset(y = 21.dp)
             ){
-                TextField(
-                    value = login,
-                    onValueChange = onLoginChange,
-                    label = { Text("Логин") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
-                )
+
+                TextFieldCard(value = login, onValueChange = onLoginChange, text = "Логин")
                 Spacer(modifier = Modifier.height(5.dp))
-                TextField(
-                    value = password,
-                    onValueChange = onPasswordChange,
-                    label = { Text("Пароль") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
-                )
+                TextFieldCard(value = password, onValueChange = onPasswordChange, text = "Пароль")
                 Spacer(modifier = Modifier.height(5.dp))
 
                 when (state) {

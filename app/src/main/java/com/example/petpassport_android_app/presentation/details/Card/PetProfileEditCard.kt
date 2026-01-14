@@ -1,6 +1,8 @@
 package com.example.petpassport_android_app.presentation.details.Card
 
 import PetProfileCard
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -15,7 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil3.Uri
 import coil3.compose.AsyncImage
+import com.example.petpassport_android_app.R
 import com.example.petpassport_android_app.domain.model.Pet
 
 @Composable
@@ -28,6 +32,13 @@ fun PetProfileEditCard(
     var breed by remember { mutableStateOf(pet.breed) }
     var weight by remember { mutableStateOf(pet.weight.toString()) }
     var birthDate by remember { mutableStateOf(pet.birthDate) }
+    var photoUri by remember { mutableStateOf<Uri?>(null) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        photoUri = uri as Uri?
+    }
 
     Column(
         modifier = Modifier
@@ -43,7 +54,7 @@ fun PetProfileEditCard(
 
         // Фото питомца
         AsyncImage(
-            model = pet.photoUrl,
+            model = if (pet.photoUrl.isNullOrEmpty()) R.drawable.avatar_pet_defualt else pet.photoUrl,
             contentDescription = null,
             modifier = Modifier
                 .size(200.dp)
@@ -54,13 +65,23 @@ fun PetProfileEditCard(
 
         // Поля редактирования
         Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-            OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Имя") })
-            OutlinedTextField(value = breed, onValueChange = { breed = it }, label = { Text("Порода") })
-            OutlinedTextField(value = weight, onValueChange = { weight = it }, label = { Text("Вес") })
-            OutlinedTextField(value = birthDate, onValueChange = { birthDate = it }, label = { Text("Дата рождения") })
+            TextFieldCard(value = name, onValueChange = { name = it }, text = "Имя")
+            TextFieldCard(value = breed, onValueChange = { breed = it }, text = "Порода")
+            TextFieldCard(value = weight, onValueChange = { weight = it }, text = "Вес")
+            TextFieldCard(value = birthDate, onValueChange = { birthDate = it }, text = "Дата рождения")
         }
 
         Spacer(Modifier.height(16.dp))
+
+        OutlinedButton(
+            onClick = { launcher.launch("image/*") },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                if (photoUri == null) "Добавить фото"
+                else "Изменить фото"
+            )
+        }
 
         // Кнопка сохранения
         Button(

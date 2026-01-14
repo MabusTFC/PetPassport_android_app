@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.example.petpassport_android_app.R
 import com.example.petpassport_android_app.domain.model.Pet
 import com.example.petpassport_android_app.presentation.theme.AppColors
 
@@ -34,7 +35,7 @@ fun PetProfileCard(
 
         // Фото питомца
         AsyncImage(
-            model = pet.photoUrl,
+            model = if (pet.photoUrl.isNullOrEmpty()) R.drawable.avatar_pet_defualt else pet.photoUrl,
             contentDescription = null,
             modifier = Modifier
                 .size(200.dp)
