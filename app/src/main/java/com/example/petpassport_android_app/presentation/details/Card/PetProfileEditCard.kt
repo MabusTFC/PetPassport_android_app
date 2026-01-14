@@ -31,7 +31,7 @@ fun PetProfileEditCard(
     var name by remember { mutableStateOf(pet.name) }
     var breed by remember { mutableStateOf(pet.breed) }
     var weight by remember { mutableStateOf(pet.weight.toString()) }
-    var birthDate by remember { mutableStateOf(pet.birthDate) }
+    var birthDateIso by remember { mutableStateOf(pet.birthDate) } // для базы данных
     var photoUri by remember { mutableStateOf<Uri?>(null) }
 
     val launcher = rememberLauncherForActivityResult(
@@ -54,7 +54,8 @@ fun PetProfileEditCard(
 
         // Фото питомца
         AsyncImage(
-            model = if (pet.photoUrl.isNullOrEmpty()) R.drawable.avatar_pet_defualt else pet.photoUrl,
+            model = photoUri
+                ?: if (pet.photoUrl.isNullOrEmpty()) R.drawable.avatar_pet_defualt else pet.photoUrl,
             contentDescription = null,
             modifier = Modifier
                 .size(200.dp)
@@ -68,20 +69,29 @@ fun PetProfileEditCard(
             TextFieldCard(value = name, onValueChange = { name = it }, text = "Имя")
             TextFieldCard(value = breed, onValueChange = { breed = it }, text = "Порода")
             TextFieldCard(value = weight, onValueChange = { weight = it }, text = "Вес")
-            TextFieldCard(value = birthDate, onValueChange = { birthDate = it }, text = "Дата рождения")
+
+            // 🗓️ Редактирование даты рождения с DateFieldCard
+            DateFieldCard(
+                label = "Дата рождения",
+                initialMillis = null, // Если у тебя уже есть millis, можно передать
+                onDateSelected = { iso ->
+                    birthDateIso = iso
+                }
+            )
         }
 
         Spacer(Modifier.height(16.dp))
 
+
+        // Кнопка выбора/изменения фото
         OutlinedButton(
             onClick = { launcher.launch("image/*") },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                if (photoUri == null) "Добавить фото"
-                else "Изменить фото"
-            )
+            Text(if (photoUri == null) "Добавить фото" else "Изменить фото")
         }
+
+        Spacer(Modifier.height(16.dp))
 
         // Кнопка сохранения
         Button(
@@ -90,7 +100,7 @@ fun PetProfileEditCard(
                     name = name,
                     breed = breed,
                     weight = weight.toDoubleOrNull() ?: pet.weight,
-                    birthDate = birthDate
+                    birthDate = birthDateIso
                 )
                 onSave(updatedPet)
             },
@@ -100,7 +110,6 @@ fun PetProfileEditCard(
         }
     }
 }
-
 @Preview(showBackground = true)
 @Composable
 fun PetProfileEditCardPreview() {

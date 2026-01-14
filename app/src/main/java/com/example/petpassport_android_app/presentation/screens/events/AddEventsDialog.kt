@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.petpassport_android_app.domain.model.Event.*
+import com.example.petpassport_android_app.presentation.details.Card.DateFieldCard
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
@@ -28,68 +29,78 @@ fun AddEventsDialog(
 ) {
     var selectedType by remember { mutableStateOf("VACCINE") }
     var title by remember { mutableStateOf("") }
-    var date by remember { mutableStateOf("") }
+    var dateIso by remember { mutableStateOf("") } // дата для базы в ISO
     var extra by remember { mutableStateOf("") }
-
-    var showDatePicker by remember { mutableStateOf(false) }
-
-    val datePickerState = rememberDatePickerState()
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Добавить процедуру") },
         text = {
             Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
 
-            ){
-
+                // Выбор типа процедуры
                 DropdownMenuBox(
                     selected = selectedType,
                     onSelected = { selectedType = it }
                 )
 
-                TextFieldCard(value = title, onValueChange = { title = it }, text = "Название")
-                OutlinedTextField(
-                    value = date,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Дата") },
-                    modifier = Modifier.fillMaxWidth(),
-                    trailingIcon = {
-                        IconButton(onClick = { showDatePicker = true }) {
-                            Icon(
-                                imageVector = Icons.Default.DateRange,
-                                contentDescription = "Выбрать дату"
-                            )
-                        }
-                    },
-                    shape = RoundedCornerShape(24.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
+                // Название процедуры
+                TextFieldCard(
+                    value = title,
+                    onValueChange = { title = it },
+                    text = "Название"
                 )
-                TextFieldCard(value = extra, onValueChange = { extra = it },
+
+                // Дата процедуры
+                DateFieldCard(
+                    label = "Дата",
+                    onDateSelected = { iso -> dateIso = iso }
+                )
+
+                // Дополнительное поле (препарат/врач)
+                TextFieldCard(
+                    value = extra,
+                    onValueChange = { extra = it },
                     text = when (selectedType) {
-                        "VACCINE"   -> "Препарат"
+                        "VACCINE" -> "Препарат"
                         "TREATMENT" -> "Лекарство"
-                        else        -> "Врач"
+                        else -> "Врач"
                     }
                 )
-
-
             }
         },
         confirmButton = {
             Button(
-                enabled = title.isNotBlank() && date.isNotBlank(),
+                enabled = title.isNotBlank() && dateIso.isNotBlank(),
                 onClick = {
                     val event = when (selectedType) {
-                        "VACCINE" -> Vaccine(0, title, formatDateForDatabase(datePickerState.selectedDateMillis!!), 0, extra)
-                        "TREATMENT" -> Treatment(0, title, formatDateForDatabase(datePickerState.selectedDateMillis!!), 0, extra, "", null)
-                        else -> DoctorVisit(0, title, formatDateForDatabase(datePickerState.selectedDateMillis!!), 0, "", extra, "")
+                        "VACCINE" -> Vaccine(
+                            id = 0,
+                            title = title,
+                            date = dateIso,
+                            petId = 0,
+                            medicine = extra
+                        )
+                        "TREATMENT" -> Treatment(
+                            id = 0,
+                            title = title,
+                            date = dateIso,
+                            petId = 0,
+                            remedy = extra,
+                            parasite = "",
+                            nextTreatmentDate = null
+                        )
+                        else -> DoctorVisit(
+                            id = 0,
+                            title = title,
+                            date = dateIso,
+                            petId = 0,
+                            clinic = "",
+                            doctor = extra,
+                            diagnosis = ""
+                        )
                     }
                     onAdd(event)
                 }
@@ -101,43 +112,6 @@ fun AddEventsDialog(
             TextButton(onClick = onDismiss) { Text("Отмена") }
         }
     )
-
-    // 🗓️ Диалог календаря
-    if (showDatePicker) {
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        datePickerState.selectedDateMillis?.let {
-                            date = formatDate(it)
-                        }
-                        showDatePicker = false
-                    }
-                ) {
-                    Text("OK")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text("Отмена")
-                }
-            }
-        ) {
-            DatePicker(state = datePickerState)
-        }
-    }
-}
-
-private fun formatDate(millis: Long): String {
-    val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-    return formatter.format(Date(millis))
-}
-
-fun formatDateForDatabase(millis: Long): String {
-    return Instant.ofEpochMilli(millis)
-        .atZone(ZoneId.of("UTC")) // важно, чтобы была UTC
-        .format(DateTimeFormatter.ISO_INSTANT)
 }
 
 

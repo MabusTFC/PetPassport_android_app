@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import coil3.Uri
 import coil3.compose.AsyncImage
 import com.example.petpassport_android_app.domain.model.Pet
+import com.example.petpassport_android_app.presentation.details.Card.DateFieldCard
 import com.example.petpassport_android_app.presentation.details.Card.TextFieldCard
 import com.example.petpassport_android_app.presentation.theme.AppColors
 
@@ -26,7 +27,7 @@ fun AddPetDialog(
     var name by remember { mutableStateOf("") }
     var breed by remember { mutableStateOf("") }
     var weight by remember { mutableStateOf("") }
-    var birthDate by remember { mutableStateOf("") }
+    var birthDateIso by remember { mutableStateOf("") } // для базы данных
     var photoUri by remember { mutableStateOf<Uri?>(null) }
 
     val launcher = rememberLauncherForActivityResult(
@@ -37,37 +38,17 @@ fun AddPetDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        confirmButton = {
-            Button(
-                onClick = {
-                    onAdd(
-                        Pet(
-                            id = 0,
-                            name = name,
-                            breed = breed,
-                            weight = weight.toDoubleOrNull() ?: 0.0,
-                            birthDate = birthDate,
-                            photoUrl = photoUri?.toString()
-                        )
-                    )
-                },
-                enabled = name.isNotBlank()
-            ) {
-                Text("Сохранить")
-            }
+        title = {
+            Text(
+                "Добавить питомца",
+                color = AppColors.Primary,
+                fontWeight = FontWeight.Bold
+            )
         },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Отмена")
-            }
-        },
-        title = { Text("Добавить питомца",
-                        color = AppColors.Primary,
-                        fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
-                // 👇 Превью выбранного фото
+                // Превью выбранного фото
                 photoUri?.let {
                     AsyncImage(
                         model = it,
@@ -78,11 +59,19 @@ fun AddPetDialog(
                         contentScale = ContentScale.Crop
                     )
                 }
+
+                // Поля для ввода данных питомца
                 TextFieldCard(value = name, onValueChange = { name = it }, text = "Имя")
                 TextFieldCard(value = breed, onValueChange = { breed = it }, text = "Порода")
                 TextFieldCard(value = weight, onValueChange = { weight = it }, text = "Вес")
-                TextFieldCard(value = birthDate, onValueChange = { birthDate = it }, text = "Дата рождения")
 
+                // 🗓️ Дата рождения с DateFieldCard
+                DateFieldCard(
+                    label = "Дата рождения",
+                    onDateSelected = { iso -> birthDateIso = iso }
+                )
+
+                // Кнопка выбора/изменения фото
                 OutlinedButton(
                     onClick = { launcher.launch("image/*") },
                     modifier = Modifier.fillMaxWidth()
@@ -92,6 +81,30 @@ fun AddPetDialog(
                         else "Изменить фото"
                     )
                 }
+            }
+        },
+        confirmButton = {
+            Button(
+                enabled = name.isNotBlank() && birthDateIso.isNotBlank(),
+                onClick = {
+                    onAdd(
+                        Pet(
+                            id = 0,
+                            name = name,
+                            breed = breed,
+                            weight = weight.toDoubleOrNull() ?: 0.0,
+                            birthDate = birthDateIso, // ISO 8601 для базы
+                            photoUrl = photoUri?.toString()
+                        )
+                    )
+                }
+            ) {
+                Text("Сохранить")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Отмена")
             }
         }
     )
