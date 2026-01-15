@@ -28,12 +28,12 @@ fun AddPetDialog(
     var breed by remember { mutableStateOf("") }
     var weight by remember { mutableStateOf("") }
     var birthDateIso by remember { mutableStateOf("") } // для базы данных
-    var photoUri by remember { mutableStateOf<Uri?>(null) }
+    var photoUri by remember { mutableStateOf<android.net.Uri?>(null) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        photoUri = uri as Uri?
+        photoUri = uri
     }
 
     AlertDialog(

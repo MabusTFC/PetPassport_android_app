@@ -32,12 +32,12 @@ fun PetProfileEditCard(
     var breed by remember { mutableStateOf(pet.breed) }
     var weight by remember { mutableStateOf(pet.weight.toString()) }
     var birthDateIso by remember { mutableStateOf(pet.birthDate) } // для базы данных
-    var photoUri by remember { mutableStateOf<Uri?>(null) }
+    var photoUri by remember { mutableStateOf<android.net.Uri?>(null) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        photoUri = uri as Uri?
+        photoUri = uri
     }
 
     Column(
@@ -54,8 +54,11 @@ fun PetProfileEditCard(
 
         // Фото питомца
         AsyncImage(
-            model = photoUri
-                ?: if (pet.photoUrl.isNullOrEmpty()) R.drawable.avatar_pet_defualt else pet.photoUrl,
+            model = when {
+                photoUri != null -> photoUri.toString()
+                !pet.photoUrl.isNullOrBlank() -> pet.photoUrl
+                else -> R.drawable.avatar_pet_defualt
+            },
             contentDescription = null,
             modifier = Modifier
                 .size(200.dp)
