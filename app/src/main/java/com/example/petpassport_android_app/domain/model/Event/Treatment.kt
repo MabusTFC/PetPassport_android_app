@@ -8,4 +8,5 @@ data class Treatment(
     val remedy: String,
     val parasite: String,
     val nextTreatmentDate: String?
+
 ) : PetEvent
