@@ -1,12 +1,18 @@
 package com.example.petpassport_android_app.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.hilt.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -52,17 +58,21 @@ class PetListNavigationScreen() : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val model = getScreenModel<PetListScreenModel>()
         val state by model.state.collectAsState()
+        val petStates by model.petStates.collectAsState()
 
         PetListScreenContent(
             state = state,
+            petStates = petStates,
             onRetry = { model.retry() },
             onAddPet = { model.addPet(it) },
             onPetProfile = { petId ->
-                navigator.push(PetProfileNavigationScreen(petId)) // здесь происходит реальный переход
-            }
+                navigator.push(PetProfileNavigationScreen(petId))
+            },
+            onRefreshPet = { petId -> model.refreshPet(petId) }
         )
     }
 }
+
 
 
 

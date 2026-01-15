@@ -24,8 +24,17 @@ class PetListScreenModel @Inject constructor(
         data class Error(val mess: String): PetsState()
     }
 
+    sealed class PetCardState {
+        object Loading : PetCardState()
+        data class Success(val pet: Pet) : PetCardState()
+        data class Error(val message: String) : PetCardState()
+    }
+
+
     private val _state = MutableStateFlow<PetsState>(PetsState.Loading)
     val state = _state.asStateFlow()
+    private val _petStates = MutableStateFlow<Map<Int, PetCardState>>(emptyMap())
+    val petStates = _petStates.asStateFlow()
 
     init {
         loadPets()
@@ -65,6 +74,29 @@ class PetListScreenModel @Inject constructor(
             }
         }
     }
+
+    fun refreshPet(petId: Int) {
+        screenModelScope.launch {
+            _petStates.value = _petStates.value.toMutableMap().apply {
+                put(petId, PetCardState.Loading)
+            }
+
+            try {
+                val pet = petRepository.getPetById(petId)
+                _petStates.value = _petStates.value.toMutableMap().apply {
+                    if (pet != null) put(petId, PetCardState.Success(pet))
+                    else put(petId, PetCardState.Error("Ошибка загрузки питомца"))
+                }
+            } catch (e: Exception) {
+                _petStates.value = _petStates.value.toMutableMap().apply {
+                    put(petId, PetCardState.Error(e.message ?: "Ошибка"))
+                }
+            }
+        }
+    }
+
+
+
 
 }
 

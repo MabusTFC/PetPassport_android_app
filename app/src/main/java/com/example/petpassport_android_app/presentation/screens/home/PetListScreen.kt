@@ -24,9 +24,11 @@ import com.example.petpassport_android_app.presentation.theme.AppColors
 @Composable
 fun PetListScreenContent(
     state: PetListScreenModel.PetsState,
+    petStates: Map<Int, PetListScreenModel.PetCardState>,
     onRetry: () -> Unit,
     onAddPet: (Pet) -> Unit,
-    onPetProfile: (Int) -> Unit // прокидываем ID питомца
+    onPetProfile: (Int) -> Unit,
+    onRefreshPet: (Int) -> Unit
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
@@ -52,15 +54,34 @@ fun PetListScreenContent(
                     Spacer(Modifier.height(12.dp))
                     Button(onClick = onRetry) { Text("Повторить") }
                 }
+
                 is PetListScreenModel.PetsState.Empty -> EmptyPetsState()
                 is PetListScreenModel.PetsState.Success -> LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(state.pets) { pet ->
-                        PetCard(
-                            pet = pet,
-                            onClick = { onPetProfile(pet.id) } // ID питомца передаем
-                        )
+                        // Получаем состояние карточки
+                        val cardState = petStates[pet.id] ?: PetListScreenModel.PetCardState.Loading
+
+                        // Автоматически обновляем данные, если карточка в Loading
+                        LaunchedEffect(pet.id) {
+                            if (cardState is PetListScreenModel.PetCardState.Loading) {
+                                onRefreshPet(pet.id)
+                            }
+                        }
+
+                        when (cardState) {
+                            is PetListScreenModel.PetCardState.Loading -> PetCardLoading()
+                            is PetListScreenModel.PetCardState.Success -> PetCard(
+                                pet = cardState.pet,
+                                onClick = { onPetProfile(cardState.pet.id) }
+                            )
+
+                            is PetListScreenModel.PetCardState.Error -> PetCardError(
+                                message = cardState.message,
+                                onRetry = { onRefreshPet(pet.id) }
+                            )
+                        }
                     }
                 }
             }
@@ -91,94 +112,6 @@ fun PetListScreenContent(
 
 
 
-@Preview
-@Composable
-fun PetListScreenPreview() {
-    PetListScreenContent(
-        state = PetListScreenModel.PetsState.Empty,
-        onRetry = {},
-        onAddPet = {},
-        onPetProfile = {1}
-    )
-}
 
 
-
-@Preview(showBackground = true)
-@Composable
-fun PetListScreenSuccessPreview() {
-    PetListScreenContent(
-        state = PetListScreenModel.PetsState.Success(
-            pets = listOf(
-                Pet(
-                    id = 1,
-                    name = "Бобик",
-                    breed = "Двортерьер",
-                    weight = 12.5,
-                    birthDate = "2021-04-12",
-                    photoUrl = ""
-                ),
-                Pet(
-                    id = 2,
-                    name = "Рекс",
-                    breed = "Немецкая овчарка",
-                    weight = 30.0,
-                    birthDate = "2020-08-01",
-                    photoUrl = ""
-                ),
-                Pet(
-                    id = 3,
-                    name = "Луна",
-                    breed = "Хаски",
-                    weight = 22.3,
-                    birthDate = "2022-01-18",
-                    photoUrl = ""
-                ),
-                Pet(
-                    id = 4,
-                    name = "Бобик",
-                    breed = "Двортерьер",
-                    weight = 12.5,
-                    birthDate = "2021-04-12",
-                    photoUrl = ""
-                ),
-                Pet(
-                    id = 5,
-                    name = "Рекс",
-                    breed = "Немецкая овчарка",
-                    weight = 30.0,
-                    birthDate = "2020-08-01",
-                    photoUrl = ""
-                ),
-                Pet(
-                    id = 6,
-                    name = "Луна",
-                    breed = "Хаски",
-                    weight = 22.3,
-                    birthDate = "2022-01-18",
-                    photoUrl = ""
-                ),
-                Pet(
-                    id = 7,
-                    name = "Рекс",
-                    breed = "Немецкая овчарка",
-                    weight = 30.0,
-                    birthDate = "2020-08-01",
-                    photoUrl = ""
-                ),
-                Pet(
-                    id = 8,
-                    name = "Луна",
-                    breed = "Хаски",
-                    weight = 22.3,
-                    birthDate = "2022-01-18",
-                    photoUrl = ""
-                )
-            )
-        ),
-        onRetry = {},
-        onAddPet = {},
-        onPetProfile = { petId -> Log.d("Preview", "Clicked pet $petId") }
-    )
-}
 
