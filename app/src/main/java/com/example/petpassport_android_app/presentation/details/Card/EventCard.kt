@@ -23,8 +23,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.petpassport_android_app.domain.model.Event.*
 import com.example.petpassport_android_app.presentation.details.Card.EventDetailsDialog
-import com.example.petpassport_android_app.presentation.details.Card.EventIconLabelCard
-import com.example.petpassport_android_app.presentation.details.Card.eventIcLabel
+
+import com.example.petpassport_android_app.presentation.details.Card.RoundedRectangleCard
 import com.example.petpassport_android_app.presentation.details.Card.eventIconRes
 import com.example.petpassport_android_app.presentation.details.Card.formatEventDate
 import com.example.petpassport_android_app.presentation.theme.AppColors
@@ -36,10 +36,11 @@ fun EventCard(
     event: PetEvent
 ) {
     var showDetails by remember { mutableStateOf(false) }
-    val iconSize = when (event) {
-        is Vaccine -> 85
-        is Treatment -> 70
-        is DoctorVisit -> 65
+
+    val type = when (event) {
+        is Vaccine -> "Вакцинация"
+        is Treatment -> "Лечение"
+        is DoctorVisit -> "Прием врача"
     }
     Card(
         shape = RoundedCornerShape(20.dp),
@@ -97,11 +98,8 @@ fun EventCard(
                 Spacer(Modifier.height(6.dp))
 
 
+                RoundedRectangleCard(type)
 
-                EventIconLabelCard(
-                    event = event,
-                    dp = iconSize // можно использовать другой размер, если нужно
-                )
 
             }
         }

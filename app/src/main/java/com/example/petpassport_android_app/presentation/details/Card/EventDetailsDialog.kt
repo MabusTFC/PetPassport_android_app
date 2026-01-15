@@ -25,10 +25,10 @@ fun EventDetailsDialog(
     event: PetEvent,
     onDismiss: () -> Unit
 ) {
-    val iconSize = when (event) {
-        is Vaccine -> 95
-        is Treatment -> 75
-        is DoctorVisit -> 65
+    val type = when (event) {
+        is Vaccine -> "Вакцинация"
+        is Treatment -> "Лечение"
+        is DoctorVisit -> "Прием врача"
     }
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -42,7 +42,7 @@ fun EventDetailsDialog(
                 text = event.title,
                 fontWeight = FontWeight.Bold,
                 color = AppColors.Primary,
-                fontSize = 20.sp
+                fontSize = 18.sp
             )
         },
         text = {
@@ -53,13 +53,11 @@ fun EventDetailsDialog(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween // разнесет иконку и дату по краям
                 ) {
-                    // 🧩 Иконка слева
-                    EventIconLabelCard(
-                        event = event,
-                        dp = iconSize
-                    )
+                    // Иконка слева
+                    RoundedRectangleCard(type)
 
-                    // 📅 Дата справа
+
+                    // Дата справа
                     Text(
                         text = formatEventDate(event.date),
                         style = MaterialTheme.typography.bodySmall,

@@ -20,20 +20,6 @@ fun eventIconRes(event: PetEvent): Int = when (event) {
     is DoctorVisit -> R.drawable.medical_folder
 }
 
-@DrawableRes
-fun eventIcLabel(event: PetEvent): Int = when (event) {
-    is Vaccine -> R.drawable.ic_vac_txt
-    is Treatment -> R.drawable.ic_tr_txt
-    is DoctorVisit -> R.drawable.ic_vis_txt
-}
-
-fun eventTypeLabel(event: PetEvent): String = when (event) {
-    is Vaccine -> "Вакцинация"
-    is Treatment -> "Лечение"
-    is DoctorVisit -> "Приём врача"
-}
-
-
 fun formatEventDate(iso: String): String {
     return try {
         Instant.parse(iso)

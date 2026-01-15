@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.petpassport_android_app.R
 import com.example.petpassport_android_app.domain.model.Pet
+import com.example.petpassport_android_app.presentation.details.Card.RoundedRectangleCard
 import com.example.petpassport_android_app.presentation.details.button.OutlineButton
 import com.example.petpassport_android_app.presentation.details.button.PrimaryButton
 import com.example.petpassport_android_app.presentation.theme.AppColors
