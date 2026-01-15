@@ -1,6 +1,7 @@
 package com.example.petpassport_android_app.data.repository
 
 import android.content.SharedPreferences
+import android.util.Log
 import com.example.petpassport_android_app.data.api.PetApiService
 import com.example.petpassport_android_app.data.mapper.toDomain
 import com.example.petpassport_android_app.data.mapper.toDto
@@ -26,7 +27,9 @@ class PetRepositoryImpl @Inject constructor(
     override suspend fun createPet(pet: Pet): Pet? {
         return try {
             val dto = pet.toDto(getOwnerId())
-            apiService.createPet(dto).toDomain()
+            val created = apiService.createPet(dto).toDomain()
+            Log.d("PetRepository", "Pet создан: $created")
+            created
         } catch (e: Exception) {
             null
         }

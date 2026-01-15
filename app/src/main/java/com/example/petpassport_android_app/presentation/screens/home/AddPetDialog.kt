@@ -1,5 +1,6 @@
 package com.example.petpassport_android_app.presentation.screens.home
 
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -68,7 +69,7 @@ fun AddPetDialog(
                 // 🗓️ Дата рождения с DateFieldCard
                 DateFieldCard(
                     label = "Дата рождения",
-                    onDateSelected = { iso -> birthDateIso = iso }
+                    onDateSelected = { iso -> birthDateIso = iso.substringBefore('T') }
                 )
 
                 // Кнопка выбора/изменения фото
@@ -87,16 +88,18 @@ fun AddPetDialog(
             Button(
                 enabled = name.isNotBlank() && birthDateIso.isNotBlank(),
                 onClick = {
-                    onAdd(
-                        Pet(
-                            id = 0,
-                            name = name,
-                            breed = breed,
-                            weight = weight.toDoubleOrNull() ?: 0.0,
-                            birthDate = birthDateIso, // ISO 8601 для базы
-                            photoUrl = photoUri?.toString()
-                        )
+                    val pet = Pet(
+                        id = 0,
+                        name = name,
+                        breed = breed,
+                        weight = weight.toDoubleOrNull() ?: 0.0,
+                        birthDate = birthDateIso,
+                        photoUrl = photoUri?.toString()
                     )
+
+                    Log.d("AddPetDialog", "Создан Pet: $pet")
+
+                    onAdd(pet)
                 }
             ) {
                 Text("Сохранить")

@@ -78,7 +78,7 @@ fun PetProfileEditCard(
                 label = "Дата рождения",
                 initialMillis = null, // Если у тебя уже есть millis, можно передать
                 onDateSelected = { iso ->
-                    birthDateIso = iso
+                    birthDateIso = iso.substringBefore('T')
                 }
             )
         }
