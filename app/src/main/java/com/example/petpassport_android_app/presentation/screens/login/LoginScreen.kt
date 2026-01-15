@@ -33,7 +33,7 @@ fun LoginScreenContent(
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(id = R.drawable.background_empty_pets),
+            painter = painterResource(id = R.drawable.bg_login_screen),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop

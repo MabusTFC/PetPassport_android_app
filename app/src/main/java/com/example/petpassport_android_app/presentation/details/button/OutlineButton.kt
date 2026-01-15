@@ -28,6 +28,6 @@ fun OutlineButton(text: String, onClick: () -> Unit) {
             .fillMaxWidth()
             .height(56.dp)
     ) {
-        Text(text = text, color = Color.Gray, fontSize = 18.sp)
+        Text(text = text, color = AppColors.Primary, fontSize = 18.sp)
     }
 }
