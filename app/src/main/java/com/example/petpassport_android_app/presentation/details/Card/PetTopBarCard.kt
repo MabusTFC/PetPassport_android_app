@@ -1,21 +1,16 @@
 package com.example.petpassport_android_app.presentation.details.Card
 
-import android.content.res.Configuration
 import com.example.petpassport_android_app.R
-import android.graphics.drawable.Icon
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -61,7 +56,7 @@ fun PetTopBar(
             // Две "вкладки" справа как кнопки
             TextButton(onClick = onProceduresClick) {
                 Image(
-                    painter = painterResource(id = R.drawable.spritz),
+                    painter = painterResource(id = R.drawable.ic_spritz),
                     contentDescription = "",
                     modifier = Modifier.size(28.dp)
                 )

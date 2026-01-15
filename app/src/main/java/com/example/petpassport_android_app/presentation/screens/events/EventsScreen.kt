@@ -32,7 +32,30 @@ fun EventsScreenContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(" | Процедуры",) },
+                title = {
+
+                    Row (
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ){
+                        Text(
+                            text = "  |  ",
+                            color = AppColors.TextSecondary
+                        )
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_spritz),
+                            contentDescription = "",
+                            modifier = Modifier
+                                .size(15.dp),
+                            tint = AppColors.TextSecondary
+                        )
+                        Text(
+                            text = "   Процедуры   ",
+                            color = AppColors.TextSecondary
+                        )
+                    } },
+
+
                 navigationIcon = {
                     IconButton(
                         onClick = onBack,

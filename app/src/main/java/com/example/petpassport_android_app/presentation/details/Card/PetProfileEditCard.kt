@@ -23,6 +23,7 @@ import coil3.Uri
 import coil3.compose.AsyncImage
 import com.example.petpassport_android_app.R
 import com.example.petpassport_android_app.domain.model.Pet
+import com.example.petpassport_android_app.presentation.theme.AppColors
 
 @Composable
 fun PetProfileEditCard(
@@ -48,16 +49,37 @@ fun PetProfileEditCard(
             .padding(16.dp)
     ) {
         // Кнопка назад
-        IconButton(
-            onClick = onBack,
-            modifier = Modifier
-                .width(150.dp)
-                .height(40.dp)
+        Row (
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = "Назад",
-                modifier = Modifier.fillMaxSize()
+            IconButton(
+                onClick = onBack,
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(40.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.logo),
+                    contentDescription = "Назад",
+                    modifier = Modifier.fillMaxSize()
+                )
+
+            }
+            Text(
+                text = "   |   ",
+                color = AppColors.TextSecondary
+            )
+            Icon(
+                painter = painterResource(id = R.drawable.ic_cat),
+                contentDescription = "",
+                modifier = Modifier
+                    .size(15.dp),
+                tint = AppColors.TextSecondary
+            )
+            Text(
+                text = "   ${pet.name}   ",
+                color = AppColors.TextSecondary
             )
         }
 
