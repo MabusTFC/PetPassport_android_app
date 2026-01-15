@@ -29,7 +29,7 @@ fun EventsScreenContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Процедуры") },
+                title = { Text("Процедуры",) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
@@ -71,7 +71,7 @@ fun EventsScreenContent(
                         items(state.events) { event ->
                             EventCard(
                                 event,
-                                onClick = {}
+                                //onClick = {}
                             )
                         }
                     }
@@ -101,6 +101,56 @@ fun EventsScreenContent(
 fun EventsScreenSuccessPreview() {
 
     val fakeEvents = listOf(
+        Vaccine(
+            id = 1,
+            title = "Вакцинация от бешенства",
+            date = "2024-03-12",
+            petId = 1,
+            medicine = "Rabican"
+        ),
+        Treatment(
+            id = 2,
+            title = "Лечение от блох",
+            date = "2024-04-01",
+            petId = 1,
+            remedy = "Frontline",
+            parasite = "Блохи",
+            nextTreatmentDate = "2024-05-01"
+        ),
+        DoctorVisit(
+            id = 3,
+            title = "Осмотр у ветеринара",
+            date = "2024-02-15",
+            petId = 1,
+            clinic = "VetLife",
+            doctor = "Иванов И.И.",
+            diagnosis = "Здоров"
+        ),
+        Vaccine(
+            id = 1,
+            title = "Вакцинация от бешенства",
+            date = "2024-03-12",
+            petId = 1,
+            medicine = "Rabican"
+        ),
+        Treatment(
+            id = 2,
+            title = "Лечение от блох",
+            date = "2024-04-01",
+            petId = 1,
+            remedy = "Frontline",
+            parasite = "Блохи",
+            nextTreatmentDate = "2024-05-01"
+        ),
+        DoctorVisit(
+            id = 3,
+            title = "Осмотр у ветеринара",
+            date = "2024-02-15",
+            petId = 1,
+            clinic = "VetLife",
+            doctor = "Иванов И.И.",
+            diagnosis = "Здоров"
+        ),
         Vaccine(
             id = 1,
             title = "Вакцинация от бешенства",

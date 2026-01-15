@@ -86,18 +86,7 @@ fun DateFieldCard(
     }
 }
 
-/** Человекочитаемый формат для UI */
-private fun formatDate(millis: Long): String {
-    val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-    return formatter.format(Date(millis))
-}
 
-/** ISO 8601 формат для базы */
-fun formatDateForDatabase(millis: Long): String {
-    return Instant.ofEpochMilli(millis)
-        .atZone(ZoneId.of("UTC"))
-        .format(DateTimeFormatter.ISO_INSTANT)
-}
 
 @Preview(showBackground = true)
 @Composable

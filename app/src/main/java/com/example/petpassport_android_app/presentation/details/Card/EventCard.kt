@@ -1,5 +1,6 @@
 package com.example.petpassport_android_app.presentation.components
 
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Card
@@ -10,16 +11,36 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.petpassport_android_app.domain.model.Event.*
+import com.example.petpassport_android_app.presentation.details.Card.EventDetailsDialog
+import com.example.petpassport_android_app.presentation.details.Card.EventIconLabelCard
+import com.example.petpassport_android_app.presentation.details.Card.eventIcLabel
+import com.example.petpassport_android_app.presentation.details.Card.eventIconRes
+import com.example.petpassport_android_app.presentation.details.Card.formatEventDate
 import com.example.petpassport_android_app.presentation.theme.AppColors
+
 
 
 @Composable
 fun EventCard(
-    event: PetEvent,
-    onClick: () -> Unit
+    event: PetEvent
 ) {
+    var showDetails by remember { mutableStateOf(false) }
+    val iconSize = when (event) {
+        is Vaccine -> 85
+        is Treatment -> 70
+        is DoctorVisit -> 65
+    }
     Card(
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = AppColors.Card),
@@ -27,47 +48,75 @@ fun EventCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
-            .clickable { onClick() }
+            .clickable { showDetails = true }
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .height(IntrinsicSize.Min),
+            verticalAlignment = Alignment.CenterVertically
         ) {
 
-            // Заголовок
-            Text(
-                text = event.title,
-                fontWeight = FontWeight.Bold,
-                color = AppColors.Primary
-            )
+            // 🧩 ИКОНКА
+            Box(
+                modifier = Modifier
+                    .size(30.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = eventIconRes(event)),
+                    contentDescription = null,
+                    tint = AppColors.Primary,
+                    modifier = Modifier.size(25.dp)
+                )
 
-            Text(text = "Дата: ${event.date}")
+            }
 
-            when (event) {
-                is Vaccine -> {
-                    Text("Тип: Вакцинация")
-                    Text("Препарат: ${event.medicine}")
+            Spacer(Modifier.width(16.dp))
+
+            // 📄 КОНТЕНТ
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Text(
+                        text = event.title,
+                        fontWeight = FontWeight.Bold,
+                        color = AppColors.Primary,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Text(
+                        text = formatEventDate(event.date),
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
 
-                is Treatment -> {
-                    Text("Тип: Лечение")
-                    Text("Препарат: ${event.remedy}")
-                    Text("Паразит: ${event.parasite}")
-                    event.nextTreatmentDate?.let {
-                        Text("Следующая дата: $it")
-                    }
-                }
+                Spacer(Modifier.height(6.dp))
 
-                is DoctorVisit -> {
-                    Text("Тип: Визит к врачу")
-                    Text("Клиника: ${event.clinic}")
-                    Text("Врач: ${event.doctor}")
-                    Text("Диагноз: ${event.diagnosis}")
-                }
+
+
+                EventIconLabelCard(
+                    event = event,
+                    dp = iconSize // можно использовать другой размер, если нужно
+                )
+
             }
         }
     }
+
+
+    if (showDetails) {
+        EventDetailsDialog(
+            event = event,
+            onDismiss = { showDetails = false }
+        )
+    }
 }
+
+
 
 @Preview(showBackground = true, name = "Vaccine")
 @Composable
@@ -80,7 +129,7 @@ fun EventCardVaccinePreview() {
             petId = 1,
             medicine = "Nobivac Rabies"
         ),
-        onClick = {}
+        //onClick = {}
     )
 }
 
@@ -97,7 +146,7 @@ fun EventCardTreatmentPreview() {
             parasite = "Клещи",
             nextTreatmentDate = "05.06.2024"
         ),
-        onClick = {}
+        //onClick = {}
     )
 }
 
@@ -114,7 +163,7 @@ fun EventCardDoctorVisitPreview() {
             doctor = "Иванов И.И.",
             diagnosis = "Аллергия"
         ),
-        onClick = {}
+        //onClick = {}
     )
 }
 
