@@ -17,6 +17,7 @@ import coil3.compose.AsyncImage
 import com.example.petpassport_android_app.R
 import com.example.petpassport_android_app.domain.model.Pet
 import com.example.petpassport_android_app.presentation.details.Card.RoundedRectangleCard
+import com.example.petpassport_android_app.presentation.details.Card.TopBarCard
 import com.example.petpassport_android_app.presentation.details.button.OutlineButton
 import com.example.petpassport_android_app.presentation.details.button.PrimaryButton
 import com.example.petpassport_android_app.presentation.theme.AppColors
@@ -27,48 +28,17 @@ fun PetProfileCard(
     onBack: () -> Unit,
     onEditProfile: () -> Unit,
     onOpenEvents: () -> Unit,
-    //onAddEvent: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
     ) {
-        // Назад
-        Row (
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier
-                    .width(150.dp)
-                    .height(40.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "Назад",
-                    modifier = Modifier.fillMaxSize()
-                )
-
-            }
-            Text(
-                text = "   |   ",
-                color = AppColors.TextSecondary
-            )
-            Icon(
-                painter = painterResource(id = R.drawable.ic_cat),
-                contentDescription = "",
-                modifier = Modifier
-                    .size(15.dp),
-                tint = AppColors.TextSecondary
-            )
-            Text(
-                text = "   ${pet.name}   ",
-                color = AppColors.TextSecondary
-            )
-        }
-
+        // TopBar с отступом сверху
+        TopBarCard(
+            onBack = onBack,
+            iconRes = R.drawable.ic_cat, // иконка экрана
+            title = pet.name,
+        )
 
         Spacer(Modifier.height(20.dp))
 
@@ -85,7 +55,7 @@ fun PetProfileCard(
 
         Spacer(Modifier.height(16.dp))
 
-        // Имя
+        // Имя крупным шрифтом
         Text(
             pet.name,
             style = MaterialTheme.typography.headlineMedium,
@@ -96,15 +66,20 @@ fun PetProfileCard(
 
         Spacer(Modifier.height(28.dp))
 
-        Text("Порода: ${pet.breed}", style = MaterialTheme.typography.bodyLarge)
-        Text("Вес: ${pet.weight} кг", style = MaterialTheme.typography.bodyLarge)
-        Text("Дата рождения: ${pet.birthDate}", style = MaterialTheme.typography.bodyLarge)
+        // Порода, вес, дата рождения
+        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+            Text("Порода: ${pet.breed}", style = MaterialTheme.typography.bodyLarge)
+            Text("Вес: ${pet.weight} кг", style = MaterialTheme.typography.bodyLarge)
+            Text("Дата рождения: ${pet.birthDate}", style = MaterialTheme.typography.bodyLarge)
+        }
 
         Spacer(Modifier.height(35.dp))
 
+        // Кнопки действия
         Column(
-            modifier = Modifier.fillMaxWidth(),
-            //horizontalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
         ) {
             OutlineButton(
                 text = "Изменить",
@@ -119,17 +94,7 @@ fun PetProfileCard(
             )
 
             Spacer(Modifier.height(10.dp))
-
-            //OutlineButton(
-            //    text = "+ Процедура",
-            //    onClick = onAddEvent,
-            //)
-
         }
-
-
-
-
     }
 }
 

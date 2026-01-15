@@ -68,7 +68,8 @@ class PetListNavigationScreen() : Screen {
             onPetProfile = { petId ->
                 navigator.push(PetProfileNavigationScreen(petId))
             },
-            onRefreshPet = { petId -> model.refreshPet(petId) }
+            onRefreshPet = { petId -> model.refreshPet(petId) },
+            onBack = {}
         )
     }
 }

@@ -18,6 +18,7 @@ import com.example.petpassport_android_app.domain.model.Event.*
 import com.example.petpassport_android_app.presentation.components.EventCard
 import com.example.petpassport_android_app.presentation.theme.AppColors
 import com.example.petpassport_android_app.R
+import com.example.petpassport_android_app.presentation.details.Card.TopBarCard
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,45 +32,10 @@ fun EventsScreenContent(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-
-                    Row (
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ){
-                        Text(
-                            text = "  |  ",
-                            color = AppColors.TextSecondary
-                        )
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_spritz),
-                            contentDescription = "",
-                            modifier = Modifier
-                                .size(15.dp),
-                            tint = AppColors.TextSecondary
-                        )
-                        Text(
-                            text = "   Процедуры   ",
-                            color = AppColors.TextSecondary
-                        )
-                    } },
-
-
-                navigationIcon = {
-                    IconButton(
-                        onClick = onBack,
-                        modifier = Modifier
-                            .width(150.dp)
-                            .height(40.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.logo),
-                            contentDescription = "Назад",
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                }
+            TopBarCard(
+                title = "Процедуры",
+                iconRes = R.drawable.ic_spritz,
+                onBack = onBack
             )
         },
         floatingActionButton = {

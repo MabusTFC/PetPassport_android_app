@@ -46,104 +46,83 @@ fun PetProfileEditCard(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            //.padding(top = 16.dp, start = 16.dp, end = 16.dp) // отступ сверху, чтобы статус-бар не перекрывал TopBarCard
     ) {
-        // Кнопка назад
-        Row (
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier
-                    .width(150.dp)
-                    .height(40.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "Назад",
-                    modifier = Modifier.fillMaxSize()
-                )
-
-            }
-            Text(
-                text = "   |   ",
-                color = AppColors.TextSecondary
-            )
-            Icon(
-                painter = painterResource(id = R.drawable.ic_cat),
-                contentDescription = "",
-                modifier = Modifier
-                    .size(15.dp),
-                tint = AppColors.TextSecondary
-            )
-            Text(
-                text = "   ${pet.name}   ",
-                color = AppColors.TextSecondary
-            )
-        }
+        // TopBarCard вместо ручного Row
+        TopBarCard(
+            onBack = onBack,
+            iconRes = R.drawable.ic_cat, // иконка экрана
+            title = pet.name
+        )
 
         Spacer(Modifier.height(20.dp))
 
-        // Фото питомца
-        AsyncImage(
-            model = when {
-                photoUri != null -> photoUri.toString()
-                !pet.photoUrl.isNullOrBlank() -> pet.photoUrl
-                else -> R.drawable.avatar_pet_defualt
-            },
-            contentDescription = null,
+        Box(
             modifier = Modifier
-                .size(200.dp)
-                .align(Alignment.CenterHorizontally)
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        // Поля редактирования
-        Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-            TextFieldCard(value = name, onValueChange = { name = it }, text = "Имя")
-            TextFieldCard(value = breed, onValueChange = { breed = it }, text = "Порода")
-            TextFieldCard(value = weight, onValueChange = { weight = it }, text = "Вес")
-
-            // 🗓️ Редактирование даты рождения с DateFieldCard
-            DateFieldCard(
-                label = "Дата рождения",
-                initialMillis = null, // Если у тебя уже есть millis, можно передать
-                onDateSelected = { iso ->
-                    birthDateIso = iso.substringBefore('T')
-                }
-            )
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-
-        // Кнопка выбора/изменения фото
-        OutlinedButton(
-            onClick = { launcher.launch("image/*") },
-            modifier = Modifier.fillMaxWidth()
+                .fillMaxWidth()
+                .padding(16.dp) // внешний отступ Box
         ) {
-            Text(if (photoUri == null) "Добавить фото" else "Изменить фото")
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        // Кнопка сохранения
-        Button(
-            onClick = {
-                val updatedPet = pet.copy(
-                    name = name,
-                    breed = breed,
-                    weight = weight.toDoubleOrNull() ?: pet.weight,
-                    birthDate = birthDateIso
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp), // расстояние между элементами
+                horizontalAlignment = Alignment.CenterHorizontally, // центруем по горизонтали
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Фото питомца
+                AsyncImage(
+                    model = when {
+                        photoUri != null -> photoUri.toString()
+                        !pet.photoUrl.isNullOrBlank() -> pet.photoUrl
+                        else -> R.drawable.avatar_pet_defualt
+                    },
+                    contentDescription = null,
+                    modifier = Modifier.size(200.dp)
                 )
-                onSave(updatedPet)
-            },
-            modifier = Modifier.align(Alignment.End)
-        ) {
-            Text("Сохранить")
+
+                // Поля редактирования
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(20.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    TextFieldCard(value = name, onValueChange = { name = it }, text = "Имя")
+                    TextFieldCard(value = breed, onValueChange = { breed = it }, text = "Порода")
+                    TextFieldCard(value = weight, onValueChange = { weight = it }, text = "Вес")
+
+                    // 🗓️ Редактирование даты рождения с DateFieldCard
+                    DateFieldCard(
+                        label = "Дата рождения",
+                        initialMillis = null,
+                        onDateSelected = { iso ->
+                            birthDateIso = iso.substringBefore('T')
+                        }
+                    )
+                }
+
+                // Кнопка выбора/изменения фото
+                OutlinedButton(
+                    onClick = { launcher.launch("image/*") },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(if (photoUri == null) "Добавить фото" else "Изменить фото")
+                }
+
+                // Кнопка сохранения
+                Button(
+                    onClick = {
+                        val updatedPet = pet.copy(
+                            name = name,
+                            breed = breed,
+                            weight = weight.toDoubleOrNull() ?: pet.weight,
+                            birthDate = birthDateIso
+                        )
+                        onSave(updatedPet)
+                    },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text("Сохранить")
+                }
+            }
         }
+
     }
 }
 @Preview(showBackground = true)
