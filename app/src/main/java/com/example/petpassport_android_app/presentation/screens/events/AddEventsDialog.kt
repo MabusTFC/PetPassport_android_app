@@ -13,6 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.petpassport_android_app.domain.model.Event.*
 import com.example.petpassport_android_app.presentation.details.Card.DateFieldCard
+import com.example.petpassport_android_app.presentation.details.Card.DateFieldProcedureCard
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
@@ -54,7 +55,7 @@ fun AddEventsDialog(
                 )
 
                 // Дата процедуры
-                DateFieldCard(
+                DateFieldProcedureCard(
                     label = "Дата",
                     onDateSelected = { iso -> dateIso = iso }
                 )

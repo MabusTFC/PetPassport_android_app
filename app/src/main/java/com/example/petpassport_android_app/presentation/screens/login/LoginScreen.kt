@@ -57,15 +57,19 @@ fun LoginScreenContent(
                 Spacer(modifier = Modifier.height(5.dp))
 
                 when (state) {
-                    is LoginScreenModel.State.Idle -> {
-                        PrimaryButton(text = "Войти", onClick = onLoginClick)
-                        Spacer(modifier = Modifier.height(5.dp))
-                        PrimaryButton(text = "Зарегистрироваться", onClick = onRegisterClick)
-                    }
-
                     is LoginScreenModel.State.Loading -> LoadingCard("Подождите…")
                     is LoginScreenModel.State.Success -> SuccessCard()
-                    is LoginScreenModel.State.Error -> ErrorCard(message = state.message)
+
+                    else -> {
+                        if (state is LoginScreenModel.State.Error) {
+                            ErrorCard(message = state.message)
+                            Spacer(Modifier.height(5.dp))
+                        }
+
+                        PrimaryButton(text = "Войти", onClick = onLoginClick)
+                        Spacer(Modifier.height(5.dp))
+                        PrimaryButton(text = "Зарегистрироваться", onClick = onRegisterClick)
+                    }
                 }
             }
         }

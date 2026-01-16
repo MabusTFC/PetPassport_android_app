@@ -1,6 +1,5 @@
 package com.example.petpassport_android_app.presentation.details.Card
 
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -10,14 +9,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.ui.text.input.TextFieldValue
-import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.rememberDatePickerState
@@ -26,7 +19,7 @@ import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DateFieldCard(
+fun DateFieldProcedureCard(
     label: String,
     initialMillis: Long? = null,
     onDateSelected: (isoDate: String) -> Unit
@@ -48,7 +41,7 @@ fun DateFieldCard(
 
                 val today = LocalDate.now()
 
-                return selectedDate <= today
+                return selectedDate >= today
             }
         }
     )
@@ -72,7 +65,7 @@ fun DateFieldCard(
         )
     )
 
-    // Диалог календаря
+
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -102,7 +95,7 @@ fun DateFieldCard(
 
 @Preview(showBackground = true)
 @Composable
-fun DateFieldCardPreview() {
+fun DateFieldCardProctdurePreview() {
     var selectedIso by remember { mutableStateOf("") }
 
     Column(modifier = Modifier.padding(16.dp)) {
