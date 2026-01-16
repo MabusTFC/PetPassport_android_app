@@ -9,16 +9,16 @@ import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface DoctorVisitApiService {
-    @POST("/api/doctor-visit")
+    @POST("api/doctor-visit")
     suspend fun createDoctorVisit(@Body doctorVisit: DoctorVisitDto): DoctorVisitDto
 
-    @GET("/api/doctor-visit/{id}")
+    @GET("api/doctor-visit/{id}")
     suspend fun getDoctorVisitById(@Path("id") id: Int): DoctorVisitDto
 
-    @PUT("/api/doctor-visit/{id}")
+    @PUT("api/doctor-visit/{id}")
     suspend fun updateDoctorVisit(@Path("id") id: Int, @Body doctorVisit: DoctorVisitDto): DoctorVisitDto
 
-    @DELETE("/api/doctor-visit/{id}")
+    @DELETE("api/doctor-visit/{id}")
     suspend fun deleteDoctorVisit(@Path("id") id: Int)
 
 }

@@ -10,16 +10,16 @@ import retrofit2.http.Path
 
 interface TreatmentApiService {
 
-    @POST("/api/treatment")
+    @POST("api/treatment")
     suspend fun createTreatment(@Body treatment: TreatmentDto): TreatmentDto
 
-    @GET("/api/treatment/{id}")
+    @GET("api/treatment/{id}")
     suspend fun getTreatmentById(@Path("id") id: Int): TreatmentDto
 
-    @PUT("/api/treatment/{id}")
+    @PUT("api/treatment/{id}")
     suspend fun updateTreatment(@Path("id") id: Int, @Body treatment: TreatmentDto): TreatmentDto
 
-    @DELETE("/api/treatment/{id}")
+    @DELETE("api/treatment/{id}")
     suspend fun deleteTreatment(@Path("id") id: Int)
 }
 
