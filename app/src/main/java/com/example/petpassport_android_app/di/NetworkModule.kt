@@ -17,12 +17,27 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(): OkHttpClient {
+        val logging = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+
+        return OkHttpClient.Builder()
+            .addInterceptor(logging)   // ← добавь
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .build()
+    }
 
     @Provides
     @Singleton
@@ -35,7 +50,8 @@ object NetworkModule {
             .build()
 
         return Retrofit.Builder()
-            .baseUrl("https://mypetpassport.ru/api/")
+            .baseUrl("https://mypetpassport.ru:4443/")
+            .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }

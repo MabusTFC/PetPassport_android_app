@@ -1,7 +1,10 @@
 package com.example.petpassport_android_app.presentation.details.Card
 
 import PetProfileCard
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -10,12 +13,15 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -29,18 +35,31 @@ import com.example.petpassport_android_app.presentation.theme.AppColors
 fun PetProfileEditCard(
     pet: Pet,
     onBack: () -> Unit,
-    onSave: (Pet) -> Unit
+    onSave: (Pet) -> Unit,
+    onUploadPhoto: (ByteArray?) -> Unit,
+    isUploading: Boolean
 ) {
     var name by remember { mutableStateOf(pet.name) }
     var breed by remember { mutableStateOf(pet.breed) }
     var weight by remember { mutableStateOf(pet.weight.toString()) }
     var birthDateIso by remember { mutableStateOf(pet.birthDate) } // для базы данных
-    var photoUri by remember { mutableStateOf<android.net.Uri?>(null) }
+
+
+    val context = LocalContext.current
 
     val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri ->
-        photoUri = uri
+        ActivityResultContracts.PickVisualMedia()
+    ) { androidUri: android.net.Uri? ->
+        if (androidUri == null) return@rememberLauncherForActivityResult
+
+        val bytes = try {
+            context.contentResolver.openInputStream(androidUri)?.use { it.readBytes() }
+        } catch (e: Exception) {
+            Log.e("PetProfileEditCard", "Ошибка чтения фото", e)
+            null
+        }
+
+        onUploadPhoto(bytes)
     }
 
     Column(
@@ -51,7 +70,7 @@ fun PetProfileEditCard(
         // TopBarCard вместо ручного Row
         TopBarCard(
             onBack = onBack,
-            iconRes = R.drawable.ic_cat, // иконка экрана
+            iconRes = R.drawable.ic_cat,
             title = pet.name
         )
 
@@ -60,23 +79,22 @@ fun PetProfileEditCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp) // внешний отступ Box
+                .padding(16.dp)
         ) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp), // расстояние между элементами
-                horizontalAlignment = Alignment.CenterHorizontally, // центруем по горизонтали
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 // Фото питомца
-                AsyncImage(
-                    model = when {
-                        photoUri != null -> photoUri.toString()
-                        !pet.photoUrl.isNullOrBlank() -> pet.photoUrl
-                        else -> R.drawable.avatar_pet_defualt
-                    },
-                    contentDescription = null,
-                    modifier = Modifier.size(200.dp)
-                )
+                key(pet.photoUrl) {
+                    AsyncImage(
+                        model = pet.photoUrl?.takeIf { it.isNotBlank() } ?: R.drawable.avatar_pet_defualt,
+                        contentDescription = "Фото питомца",
+                        modifier = Modifier.size(200.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
 
                 // Поля редактирования
                 Column(
@@ -99,10 +117,19 @@ fun PetProfileEditCard(
 
                 // Кнопка выбора/изменения фото
                 OutlinedButton(
-                    onClick = { launcher.launch("image/*") },
-                    modifier = Modifier.fillMaxWidth()
+                    onClick = {
+                        launcher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isUploading
                 ) {
-                    Text(if (photoUri == null) "Добавить фото" else "Изменить фото")
+                    Text(if (pet.photoUrl.isNullOrBlank()) "Добавить фото" else "Изменить фото")
+                }
+
+                if (isUploading) {
+                    CircularProgressIndicator()
                 }
 
                 // Кнопка сохранения
@@ -138,6 +165,8 @@ fun PetProfileEditCardPreview() {
             photoUrl = ""
         ),
         onBack = {},
-        onSave = {}
+        onSave = {},
+        onUploadPhoto = {},
+        isUploading = true
     )
 }

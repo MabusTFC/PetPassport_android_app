@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,15 +44,18 @@ fun PetProfileCard(
         Spacer(Modifier.height(20.dp))
 
         // Фото
-        AsyncImage(
-            model = if (pet.photoUrl.isNullOrEmpty())
-                R.drawable.avatar_pet_defualt
-            else pet.photoUrl,
-            contentDescription = null,
-            modifier = Modifier
-                .size(200.dp)
-                .align(Alignment.CenterHorizontally)
-        )
+        key(pet.photoUrl) {
+            AsyncImage(
+                model = if (pet.photoUrl.isNullOrEmpty())
+                    R.drawable.avatar_pet_defualt
+                else pet.photoUrl,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(200.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+        }
+
 
         Spacer(Modifier.height(16.dp))
 

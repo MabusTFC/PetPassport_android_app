@@ -53,10 +53,10 @@ fun PetListScreenContent(
         ) {
             // фон
             /**Image(
-                painter = painterResource(id = R.drawable.background_empty_pets),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+            painter = painterResource(id = R.drawable.background_empty_pets),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
             )**/
 
             // основной контент с padding 16.dp
@@ -77,12 +77,15 @@ fun PetListScreenContent(
                     is PetListScreenModel.PetsState.Success -> LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(state.pets) { pet ->
+                        items(
+                            state.pets,
+                            key = {it.id}
+                        ){ pet ->
                             // Получаем состояние карточки
                             val cardState = petStates[pet.id] ?: PetListScreenModel.PetCardState.Loading
 
                             // Автоматически обновляем данные, если карточка в Loading
-                            LaunchedEffect(pet.id) {
+                            LaunchedEffect(pet.id, ) {
                                 if (cardState is PetListScreenModel.PetCardState.Loading) {
                                     onRefreshPet(pet.id)
                                 }
@@ -177,11 +180,3 @@ fun PetListScreen_WithPets_Preview() {
         onBack = {}
     )
 }
-
-
-
-
-
-
-
-

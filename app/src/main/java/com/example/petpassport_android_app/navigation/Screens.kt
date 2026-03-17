@@ -1,5 +1,6 @@
 package com.example.petpassport_android_app.navigation
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -10,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -60,6 +62,10 @@ class PetListNavigationScreen() : Screen {
         val state by model.state.collectAsState()
         val petStates by model.petStates.collectAsState()
 
+        LaunchedEffect(Unit) {
+            model.retry()
+        }
+
         PetListScreenContent(
             state = state,
             petStates = petStates,
@@ -69,7 +75,7 @@ class PetListNavigationScreen() : Screen {
                 navigator.push(PetProfileNavigationScreen(petId))
             },
             onRefreshPet = { petId -> model.refreshPet(petId) },
-            onBack = {}
+            onBack = {navigator.pop()}
         )
     }
 }
@@ -86,6 +92,7 @@ class PetProfileNavigationScreen(
         val navigator = LocalNavigator.currentOrThrow
         val model = getScreenModel<PetProfileScreenModel>()
         val state by model.state.collectAsState()
+        val context = LocalContext.current
 
         LaunchedEffect(petId) {
             model.loadPetById(petId)
@@ -98,7 +105,9 @@ class PetProfileNavigationScreen(
             onSavePet = { model.savePet(it) },
             onOpenEvents = {
                 navigator.push(EventsNavigationScreen(petId))
-            }
+            },
+            onUploadPhoto = { bytes -> model.uploadPhoto(petId, bytes) },
+            context = context
         )
     }
 }

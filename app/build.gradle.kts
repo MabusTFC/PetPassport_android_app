@@ -1,3 +1,6 @@
+import java.util.Properties
+
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -8,18 +11,25 @@ plugins {
 
 android {
     namespace = "com.example.petpassport_android_app"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.petpassport_android_app"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val properties = Properties()
+        val propertiesFile = project.rootProject.file("local.properties")
+        if (propertiesFile.exists()) {
+            properties.load(propertiesFile.inputStream())
+        }
+
+        val baseUrl = properties.getProperty("BASE_URL") ?: "\"https://mypetpassport.ru:4443\""
+        buildConfigField("String", "BASE_URL", baseUrl)
     }
 
     buildTypes {
@@ -32,14 +42,15 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -56,6 +67,7 @@ dependencies {
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.runtime)
+    implementation(libs.runtime)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -75,13 +87,14 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:${okhttp}")
 
 
-    var hilt = "2.48"
+    var hilt = "2.55"
 
     implementation("com.google.dagger:hilt-android:${hilt}")
     kapt("com.google.dagger:hilt-compiler:${hilt}")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    kapt("androidx.hilt:hilt-compiler:1.2.0")
 
-    val voyager = "1.0.0"
+    val voyager = "1.1.0-beta03"
     implementation("cafe.adriel.voyager:voyager-navigator:$voyager")
     implementation("cafe.adriel.voyager:voyager-transitions:$voyager")
     implementation("cafe.adriel.voyager:voyager-screenmodel:${voyager}")

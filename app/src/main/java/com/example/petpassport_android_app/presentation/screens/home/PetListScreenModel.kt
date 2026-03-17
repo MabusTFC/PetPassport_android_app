@@ -1,6 +1,7 @@
 package com.example.petpassport_android_app.presentation.screens.home
 
 import android.content.SharedPreferences
+import android.util.Log
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.petpassport_android_app.domain.model.Pet
@@ -46,18 +47,32 @@ class PetListScreenModel @Inject constructor(
 
     private fun loadPets() {
         screenModelScope.launch {
-            _state.value = PetsState.Loading
-            try {
 
+            try {
                 val ownerId = sharedPreferences.getInt("owner_id", -1)
-                if (ownerId == -1) {
-                    _state.value = PetsState.Error("Не авторизован")
-                    return@launch
+                if (ownerId == -1) return@launch
+
+                val petsFromServer = repository.getPetsByOwner(ownerId)
+
+                val currentState = _state.value
+                val existingPhotos = if (currentState is PetsState.Success) {
+                    currentState.pets.associate { it.id to it.photoUrl }
+                } else emptyMap()
+
+                val mergedPets = petsFromServer.map { serverPet ->
+                    val cachedPhoto = existingPhotos[serverPet.id]
+                    if (!cachedPhoto.isNullOrBlank()) {
+                        serverPet.copy(photoUrl = cachedPhoto)
+                    } else {
+                        serverPet
+                    }
                 }
 
-                val pets = repository.getPetsByOwner(ownerId)
+                _state.value = if (mergedPets.isEmpty()) PetsState.Empty else PetsState.Success(mergedPets)
 
-                _state.value = if (pets.isEmpty()) PetsState.Empty else PetsState.Success(pets)
+                mergedPets.forEach { pet ->
+                    refreshPet(pet.id)
+                }
             } catch (e: Exception) {
                 _state.value = PetsState.Error(e.message ?: "Ошибка загрузки")
             }
@@ -77,19 +92,38 @@ class PetListScreenModel @Inject constructor(
 
     fun refreshPet(petId: Int) {
         screenModelScope.launch {
+            // Карта состояний карточки
             _petStates.value = _petStates.value.toMutableMap().apply {
                 put(petId, PetCardState.Loading)
             }
 
             try {
-                val pet = petRepository.getPetById(petId)
-                _petStates.value = _petStates.value.toMutableMap().apply {
-                    if (pet != null) put(petId, PetCardState.Success(pet))
-                    else put(petId, PetCardState.Error("Ошибка загрузки питомца"))
+                val freshPet = petRepository.getPetById(petId)
+                if (freshPet != null) {
+                    val finalUrl = if (!freshPet.photoUrl.isNullOrBlank()) {
+                        val separator = if (freshPet.photoUrl!!.contains("?")) "&" else "?"
+                        "${freshPet.photoUrl}$separator${System.currentTimeMillis()}"
+                    } else null
+
+                    val petWithPhoto = freshPet.copy(photoUrl = finalUrl)
+
+                    // 1. Обновляем карту карточек
+                    _petStates.value = _petStates.value.toMutableMap().apply {
+                        put(petId, PetCardState.Success(petWithPhoto))
+                    }
+
+                    // 2. ОБЯЗАТЕЛЬНО обновляем основной список
+                    val currentState = _state.value
+                    if (currentState is PetsState.Success) {
+                        val updatedList = currentState.pets.map {
+                            if (it.id == petId) petWithPhoto else it
+                        }
+                        _state.value = PetsState.Success(updatedList)
+                    }
                 }
             } catch (e: Exception) {
                 _petStates.value = _petStates.value.toMutableMap().apply {
-                    put(petId, PetCardState.Error(e.message ?: "Ошибка"))
+                    put(petId, PetCardState.Error("Ошибка"))
                 }
             }
         }
@@ -99,4 +133,3 @@ class PetListScreenModel @Inject constructor(
 
 
 }
-

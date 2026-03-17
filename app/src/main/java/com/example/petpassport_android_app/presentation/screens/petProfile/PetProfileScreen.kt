@@ -2,8 +2,15 @@ package com.example.petpassport_android_app.presentation.screens.petProfile
 
 
 import PetProfileCard
+import android.content.Context
+import android.net.Uri
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.petpassport_android_app.domain.model.Event.PetEvent
@@ -20,32 +27,48 @@ fun PetProfileScreenContent(
     onBack: () -> Unit,
     onEditProfile: () -> Unit,
     onSavePet: (Pet) -> Unit,
-    onOpenEvents: () -> Unit
+    onOpenEvents: () -> Unit,
+    onUploadPhoto: (ByteArray?) -> Unit,
+    context: Context
 ) {
     when (state) {
-        is PetProfileScreenModel.State.Loading -> {
-            LoadingCard("Загрузка профиля…")
-        }
-
-        is PetProfileScreenModel.State.Error -> {
-            ErrorCard(state.message)
-        }
+        is PetProfileScreenModel.State.Loading -> LoadingCard("Загрузка профиля…")
+        is PetProfileScreenModel.State.Error -> ErrorCard(state.message)
 
         is PetProfileScreenModel.State.View -> {
-            PetProfileCard(
-                pet = state.pet,
-                onBack = onBack,
-                onEditProfile = onEditProfile,
-                onOpenEvents = onOpenEvents
-            )
+            key(state.pet.photoUrl) {
+                PetProfileCard(
+                    pet = state.pet,
+                    onBack = onBack,
+                    onEditProfile = onEditProfile,
+                    onOpenEvents = onOpenEvents
+                )
+            }
         }
 
         is PetProfileScreenModel.State.Edit -> {
-            PetProfileEditCard(
-                pet = state.pet,
-                onBack = onBack,
-                onSave = onSavePet
-            )
+            val launcher = rememberLauncherForActivityResult(
+                ActivityResultContracts.PickVisualMedia()
+            ) { androidUri: Uri? ->
+                if (androidUri == null) return@rememberLauncherForActivityResult
+
+                val bytes = try {
+                    context.contentResolver.openInputStream(androidUri)?.use { it.readBytes() }
+                } catch (e: Exception) {
+                    null
+                }
+                onUploadPhoto(bytes)
+            }
+            key(state.pet.photoUrl) {
+                PetProfileEditCard(
+                    pet = state.pet,
+                    onBack = onBack,
+                    onSave = onSavePet,
+                    isUploading = state.isUploadingPhoto,
+                    onUploadPhoto = { launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+                )
+            }
+
         }
     }
 }
@@ -71,7 +94,9 @@ fun PetProfileScreenViewPreview() {
         onBack = {},
         onEditProfile = {},
         onSavePet = {},
-        onOpenEvents = {}
+        onOpenEvents = {},
+        context = LocalContext.current,
+        onUploadPhoto = {}
     )
 }
 
@@ -92,7 +117,9 @@ fun PetProfileScreenEditPreview() {
         onBack = {},
         onEditProfile = {},
         onSavePet = {},
-        onOpenEvents = {}
+        onOpenEvents = {},
+        context = LocalContext.current,
+        onUploadPhoto = {}
     )
 }
 
