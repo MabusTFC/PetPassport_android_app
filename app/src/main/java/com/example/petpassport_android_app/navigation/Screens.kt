@@ -28,11 +28,32 @@ import com.example.petpassport_android_app.presentation.screens.login.LoginScree
 import com.example.petpassport_android_app.presentation.screens.login.LoginScreenModel
 import com.example.petpassport_android_app.presentation.screens.home.PetListScreenContent
 import com.example.petpassport_android_app.presentation.screens.home.PetListScreenModel
+import com.example.petpassport_android_app.presentation.screens.login.LoginEntryContent
+import com.example.petpassport_android_app.presentation.screens.login.RegisterEntryContent
 import com.example.petpassport_android_app.presentation.screens.petProfile.PetProfileScreenContent
 import com.example.petpassport_android_app.presentation.screens.petProfile.PetProfileScreenModel
 
 
-class LoginNavigationScreen(): Screen {
+class LoginNavigationScreen : Screen {
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val model = getScreenModel<LoginScreenModel>()
+        val state by model.state.collectAsState()
+
+        // Сброс состояния модели при возврате на главный экран
+        LaunchedEffect(Unit) { model.resetState() }
+
+        // Вызываем только UI функцию
+        LoginScreenContent(
+            state = state,
+            onLoginClick = { navigator.push(LoginEntryNavigationScreen()) },
+            onRegisterClick = { navigator.push(RegisterEntryNavigationScreen()) }
+        )
+    }
+}
+
+class LoginEntryNavigationScreen : Screen {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
@@ -42,14 +63,38 @@ class LoginNavigationScreen(): Screen {
         var login by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
 
-        LoginScreenContent(
+        // Вызываем только UI функцию
+        LoginEntryContent(
             state = state,
             login = login,
             onLoginChange = { login = it },
             password = password,
             onPasswordChange = { password = it },
-            onLoginClick = { model.login(login, password, navigator) },
-            onRegisterClick = { model.register(login, password, navigator) }
+            onBack = { navigator.pop() },
+            onSubmit = { model.login(login, password, navigator) }
+        )
+    }
+}
+
+class RegisterEntryNavigationScreen : Screen {
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val model = getScreenModel<LoginScreenModel>()
+        val state by model.state.collectAsState()
+
+        var login by remember { mutableStateOf("") }
+        var password by remember { mutableStateOf("") }
+
+        // Вызываем только UI функцию
+        RegisterEntryContent(
+            state = state,
+            login = login,
+            onLoginChange = { login = it },
+            password = password,
+            onPasswordChange = { password = it },
+            onBack = { navigator.pop() },
+            onSubmit = { model.register(login, password, navigator) }
         )
     }
 }
