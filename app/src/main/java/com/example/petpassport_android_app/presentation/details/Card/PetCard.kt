@@ -15,6 +15,7 @@ import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.example.petpassport_android_app.domain.model.Pet
+import com.example.petpassport_android_app.presentation.screens.home.NewPrimaryDark
 import com.example.petpassport_android_app.presentation.theme.AppColors
 import java.time.LocalDate
 
@@ -32,72 +34,49 @@ fun PetCard(
     pet: Pet,
     onClick: () -> Unit
 ) {
-
-    LaunchedEffect(pet.photoUrl) {
-        Log.d("PetCardDebug", "Карточка питомца ${pet.id}, URL: ${pet.photoUrl}")
-    }
-
-    key(pet.photoUrl){
-        Card(
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = AppColors.Card),
-            elevation = CardDefaults.elevatedCardElevation(8.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 6.dp)
-                .clickable { onClick() }
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.Top
+            // Фото питомца (квадратное со скруглением)
+            Surface(
+                modifier = Modifier.size(80.dp),
+                shape = RoundedCornerShape(16.dp),
+                color = Color(0xFFF2F3F5)
             ) {
-
-                // 🐶 Фото
                 AsyncImage(
-                    model = if (pet.photoUrl.isNullOrBlank())
-                        R.drawable.avatar_pet_defualt
-                    else pet.photoUrl,
-                    contentDescription = pet.name,
-                    placeholder = painterResource(R.drawable.avatar_pet_defualt), // пока грузится
-                    error = painterResource(R.drawable.avatar_pet_defualt),       // если ошибка
-                    fallback = painterResource(R.drawable.avatar_pet_defualt),
-                    modifier = Modifier
-                        .size(72.dp)
-                        .clip(RoundedCornerShape(16.dp)),
-                    contentScale = ContentScale.Crop
+                    model = pet.photoUrl?.takeIf { it.isNotBlank() } ?: R.drawable.avatar_pet_defualt,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
                 )
+            }
 
-                Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(16.dp))
 
-                // 📄 Текстовая часть
-                Column(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-
-                    // Имя — может переноситься
-                    Text(
-                        text = pet.name,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = AppColors.Primary,
-                        fontSize = 20.sp
-                    )
-
-                    Spacer(Modifier.height(6.dp))
-
-                    // Строка с породой справа
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-
-                        RoundedRectangleCard(pet.breed)
-                    }
-                }
+            // Текстовая информация
+            Column {
+                Text(
+                    text = pet.name,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = NewPrimaryDark
+                )
+                Text(
+                    text = pet.breed,
+                    fontSize = 14.sp,
+                    color = Color(0xFF4A378B).copy(alpha = 0.7f) // Фиолетово-серый цвет
+                )
             }
         }
     }
-
 }
 
 

@@ -41,10 +41,7 @@ class LoginNavigationScreen : Screen {
         val model = getScreenModel<LoginScreenModel>()
         val state by model.state.collectAsState()
 
-        // Сброс состояния модели при возврате на главный экран
         LaunchedEffect(Unit) { model.resetState() }
-
-        // Вызываем только UI функцию
         LoginScreenContent(
             state = state,
             onLoginClick = { navigator.push(LoginEntryNavigationScreen()) },
@@ -63,7 +60,6 @@ class LoginEntryNavigationScreen : Screen {
         var login by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
 
-        // Вызываем только UI функцию
         LoginEntryContent(
             state = state,
             login = login,
@@ -86,7 +82,6 @@ class RegisterEntryNavigationScreen : Screen {
         var login by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
 
-        // Вызываем только UI функцию
         RegisterEntryContent(
             state = state,
             login = login,

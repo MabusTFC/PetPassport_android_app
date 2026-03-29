@@ -90,7 +90,7 @@ fun PetListScreenContent(
 
                 is PetListScreenModel.PetsState.Empty -> {
                     // Теперь это будет ровно по центру экрана
-                    EmptyPetsNewState(20.dp)
+                    EmptyPetsState(20.dp)
                 }
 
                 is PetListScreenModel.PetsState.Success -> {
@@ -127,7 +127,7 @@ fun PetListScreenContent(
                                 is PetListScreenModel.PetCardState.Loading -> PetCardLoading()
                                 is PetListScreenModel.PetCardState.Success -> {
                                     // Используем новый дизайн карточки
-                                    NewPetCard(
+                                    PetCard(
                                         pet = cardState.pet,
                                         onClick = { onPetProfile(cardState.pet.id) }
                                     )
@@ -145,91 +145,6 @@ fun PetListScreenContent(
 
             if (showDialog) {
                 AddPetDialog(onDismiss = { showDialog = false }, onAdd = { onAddPet(it); showDialog = false })
-            }
-        }
-    }
-}
-
-@Composable
-fun EmptyPetsNewState(dp: Dp) {
-    // Контейнер на весь экран, чтобы центрировать карточку
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp) // ТОТ ЖЕ ОТСТУП, ЧТО И У ТОП-БАРА
-                .aspectRatio(1f), // Делаем карточку квадратной
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            shape = RoundedCornerShape(28.dp),
-            elevation = CardDefaults.cardElevation(0.dp) // Убираем тень, как вы хотели
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                // Картинка собаки
-                Image(
-                    painter = painterResource(id = R.drawable.no_photo_pet),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(0.9f), // Занимает 70% места внутри карточки
-                    contentScale = ContentScale.Fit
-                )
-
-                // Сюда можно добавить текст "У вас пока нет питомцев", если нужно
-            }
-        }
-    }
-}
-
-@Composable
-fun NewPetCard(
-    pet: Pet,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-    ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Фото питомца (квадратное со скруглением)
-            Surface(
-                modifier = Modifier.size(80.dp),
-                shape = RoundedCornerShape(16.dp),
-                color = Color(0xFFF2F3F5)
-            ) {
-                AsyncImage(
-                    model = pet.photoUrl?.takeIf { it.isNotBlank() } ?: R.drawable.avatar_pet_defualt,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // Текстовая информация
-            Column {
-                Text(
-                    text = pet.name,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = NewPrimaryDark
-                )
-                Text(
-                    text = pet.breed,
-                    fontSize = 14.sp,
-                    color = Color(0xFF4A378B).copy(alpha = 0.7f) // Фиолетово-серый цвет
-                )
             }
         }
     }
