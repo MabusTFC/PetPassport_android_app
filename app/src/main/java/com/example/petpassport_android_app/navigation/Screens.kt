@@ -140,9 +140,10 @@ class PetProfileNavigationScreen(
 
         PetProfileScreenContent(
             state = state,
-            onBack = { navigator.pop() },
+            onBack = { navigator.pop() }, // Закрыть весь экран профиля
             onEditProfile = { model.enableEditMode() },
             onSavePet = { model.savePet(it) },
+            onDismissEdit = { model.dismissEditMode() }, // Вернуться из Edit в View
             onOpenEvents = {
                 navigator.push(EventsNavigationScreen(petId))
             },

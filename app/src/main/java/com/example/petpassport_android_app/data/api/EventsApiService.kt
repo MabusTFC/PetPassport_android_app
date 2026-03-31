@@ -6,7 +6,7 @@ import retrofit2.http.Path
 
 interface EventsApiService {
 
-    @GET("api/events/upcoming/{petId}")
+    @GET("api/events/{petId}")
     suspend fun getUpcomingEvents(@Path("petId") petId: Int): List<EventDto>
 
 }

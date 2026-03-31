@@ -47,7 +47,11 @@ object NetworkModule {
 
         val client = OkHttpClient.Builder()
             .addInterceptor(logging)
+            .connectTimeout(30, TimeUnit.SECONDS) // Ждем подключения 30 сек
+            .readTimeout(30, TimeUnit.SECONDS)    // Ждем ответа 30 сек
+            .writeTimeout(30, TimeUnit.SECONDS)
             .build()
+
 
         return Retrofit.Builder()
             .baseUrl("https://mypetpassport.ru:4443/")

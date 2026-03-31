@@ -1,19 +1,21 @@
 package com.example.petpassport_android_app.presentation.screens.petProfile
 
 
-import PetProfileCard
+import com.example.petpassport_android_app.presentation.details.Card.PetProfileCard
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.petpassport_android_app.domain.model.Event.PetEvent
 
 import com.example.petpassport_android_app.domain.model.Pet
 import com.example.petpassport_android_app.presentation.details.Card.ErrorCard
@@ -29,46 +31,40 @@ fun PetProfileScreenContent(
     onSavePet: (Pet) -> Unit,
     onOpenEvents: () -> Unit,
     onUploadPhoto: (ByteArray?) -> Unit,
+    onDismissEdit: () -> Unit,
     context: Context
 ) {
-    when (state) {
-        is PetProfileScreenModel.State.Loading -> LoadingCard("Загрузка профиля…")
-        is PetProfileScreenModel.State.Error -> ErrorCard(state.message)
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Фоновый слой (Просмотр или Состояние под шторкой)
+        when (state) {
+            is PetProfileScreenModel.State.Loading -> LoadingCard("Загрузка профиля…")
+            is PetProfileScreenModel.State.Error -> ErrorCard(state.message)
 
-        is PetProfileScreenModel.State.View -> {
-            key(state.pet.photoUrl) {
-                PetProfileCard(
-                    pet = state.pet,
-                    onBack = onBack,
-                    onEditProfile = onEditProfile,
-                    onOpenEvents = onOpenEvents
-                )
+            is PetProfileScreenModel.State.View, is PetProfileScreenModel.State.Edit -> {
+                val pet = if (state is PetProfileScreenModel.State.View) state.pet else (state as PetProfileScreenModel.State.Edit).pet
+                val events = if (state is PetProfileScreenModel.State.View) state.events else (state as PetProfileScreenModel.State.Edit).events
+
+                key(pet.photoUrl) {
+                    PetProfileCard(
+                        pet = pet,
+                        events = events, // Передаем список событий
+                        onBack = onBack,
+                        onEditProfile = onEditProfile,
+                        onOpenEvents = onOpenEvents
+                    )
+                }
             }
         }
 
-        is PetProfileScreenModel.State.Edit -> {
-            val launcher = rememberLauncherForActivityResult(
-                ActivityResultContracts.PickVisualMedia()
-            ) { androidUri: Uri? ->
-                if (androidUri == null) return@rememberLauncherForActivityResult
-
-                val bytes = try {
-                    context.contentResolver.openInputStream(androidUri)?.use { it.readBytes() }
-                } catch (e: Exception) {
-                    null
-                }
-                onUploadPhoto(bytes)
-            }
-            key(state.pet.photoUrl) {
-                PetProfileEditCard(
-                    pet = state.pet,
-                    onBack = onBack,
-                    onSave = onSavePet,
-                    isUploading = state.isUploadingPhoto,
-                    onUploadPhoto = { launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
-                )
-            }
-
+        // Слой шторки редактирования
+        if (state is PetProfileScreenModel.State.Edit) {
+            PetProfileEditCard(
+                pet = state.pet,
+                onBack = onDismissEdit,
+                onSave = onSavePet,
+                isUploading = state.isUploadingPhoto,
+                onUploadPhoto = onUploadPhoto
+            )
         }
     }
 }
@@ -89,15 +85,18 @@ fun PetProfileScreenViewPreview() {
         photoUrl = ""
     )
 
-    PetProfileScreenContent(
-        state = PetProfileScreenModel.State.View(samplePet),
-        onBack = {},
-        onEditProfile = {},
-        onSavePet = {},
-        onOpenEvents = {},
-        context = LocalContext.current,
-        onUploadPhoto = {}
-    )
+    MaterialTheme { // Обязательно для ModalBottomSheet и стилей
+        PetProfileScreenContent(
+            state = PetProfileScreenModel.State.View(samplePet),
+            onBack = {},
+            onEditProfile = {},
+            onSavePet = {},
+            onOpenEvents = {},
+            onDismissEdit = {}, // Добавили новый параметр
+            context = LocalContext.current,
+            onUploadPhoto = {}
+        )
+    }
 }
 
 @Preview(showBackground = true, name = "Edit")
@@ -112,15 +111,18 @@ fun PetProfileScreenEditPreview() {
         photoUrl = ""
     )
 
-    PetProfileScreenContent(
-        state = PetProfileScreenModel.State.Edit(samplePet),
-        onBack = {},
-        onEditProfile = {},
-        onSavePet = {},
-        onOpenEvents = {},
-        context = LocalContext.current,
-        onUploadPhoto = {}
-    )
+    MaterialTheme {
+        PetProfileScreenContent(
+            state = PetProfileScreenModel.State.Edit(samplePet),
+            onBack = {},
+            onEditProfile = {},
+            onSavePet = {},
+            onOpenEvents = {},
+            onDismissEdit = {}, // Добавили новый параметр
+            context = LocalContext.current,
+            onUploadPhoto = {}
+        )
+    }
 }
 
 

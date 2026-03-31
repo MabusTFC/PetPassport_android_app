@@ -1,6 +1,8 @@
 package com.example.petpassport_android_app.presentation.components
 
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Card
@@ -13,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,7 +23,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
 import com.example.petpassport_android_app.domain.model.Event.*
 import com.example.petpassport_android_app.presentation.details.Card.EventDetailsDialog
 
@@ -28,6 +33,7 @@ import com.example.petpassport_android_app.presentation.details.Card.RoundedRect
 import com.example.petpassport_android_app.presentation.details.Card.eventIconRes
 import com.example.petpassport_android_app.presentation.details.Card.formatEventDate
 import com.example.petpassport_android_app.presentation.theme.AppColors
+import com.example.petpassport_android_app.R
 
 
 
@@ -35,82 +41,124 @@ import com.example.petpassport_android_app.presentation.theme.AppColors
 fun EventCard(
     event: PetEvent
 ) {
-    var showDetails by remember { mutableStateOf(false) }
+    // Цвета из макета
+    val primaryDark = Color(0xFF2E1A7A)
+    val bellBlue = Color(0xFF5AB6FF)
+    val badgeBg = Color(0xFFF2F3F7)
+    val borderColor = Color(0xFFE0E0E0)
 
-    val type = when (event) {
+    // Определяем текст категории в зависимости от типа события
+    val categoryLabel = when (event) {
         is Vaccine -> "Вакцинация"
-        is Treatment -> "Лечение"
-        is DoctorVisit -> "Прием врача"
+        is Treatment -> "Обработка"
+        is DoctorVisit -> "Приём врача"
+        else -> "Процедура"
     }
-    Card(
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = AppColors.Card),
-        elevation = CardDefaults.elevatedCardElevation(8.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp)
-            .clickable { showDetails = true }
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .height(IntrinsicSize.Min),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
 
-            // 🧩 ИКОНКА
+    Card(
+        shape = RoundedCornerShape(32.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(0.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(top = 20.dp, bottom = 24.dp, start = 20.dp, end = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // --- ВЕРХНИЙ РЯД (Иконка + Дата) ---
             Box(
-                modifier = Modifier
-                    .size(30.dp),
+                modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(id = eventIconRes(event)),
+                    painter = painterResource(id = R.drawable.ic_notification_on),
                     contentDescription = null,
-                    tint = AppColors.Primary,
-                    modifier = Modifier.size(25.dp)
+                    tint = bellBlue,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .align(Alignment.CenterStart)
                 )
 
-            }
-
-            Spacer(Modifier.width(16.dp))
-
-            // 📄 КОНТЕНТ
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.Top
+                // Плашка с датой
+                Surface(
+                    shape = RoundedCornerShape(32.dp), // Максимальное скругление (овал)
+                    border = BorderStroke(1.dp, Color(0xFFE0E0E0)), // Тонкая серая рамка
+                    color = Color.White
                 ) {
-                    Text(
-                        text = event.title,
-                        fontWeight = FontWeight.Bold,
-                        color = AppColors.Primary,
-                        modifier = Modifier.weight(1f)
-                    )
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // 📅 Иконка календаря с часами
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_calendar), // Убедитесь, что это иконка как на фото
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = primaryDark
+                        )
 
-                    Text(
-                        text = formatEventDate(event.date),
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        // 🗓 Текст даты (например: 30 сентября 2025)
+                        Text(
+                            text = event.date.substringBefore("|").trim(), // Берем часть до разделителя
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = primaryDark
+                        )
+
+                        // 📏 Вертикальный разделитель (серая линия)
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 12.dp)
+                                .width(1.dp)
+                                .height(16.dp)
+                                .background(Color(0xFFE0E0E0))
+                        )
+
+                        // ⏰ Текст времени (например: 13:00)
+                        Text(
+                            text = event.date.substringAfter("|").trim(), // Берем часть после разделителя
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = primaryDark
+                        )
+                    }
                 }
-
-                Spacer(Modifier.height(6.dp))
-
-
-                RoundedRectangleCard(type)
-
-
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- КАТЕГОРИЯ ---
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = badgeBg,
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Text(
+                    // ДИНАМИЧЕСКАЯ КАТЕГОРИЯ
+                    text = categoryLabel,
+                    modifier = Modifier.padding(vertical = 10.dp),
+                    fontSize = 16.sp,
+                    color = primaryDark,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // --- ЗАГОЛОВОК ---
+            Text(
+                // ДИНАМИЧЕСКИЙ ЗАГОЛОВОК
+                text = event.title,
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold,
+                color = primaryDark,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Start
+            )
         }
-    }
-
-
-    if (showDetails) {
-        EventDetailsDialog(
-            event = event,
-            onDismiss = { showDetails = false }
-        )
     }
 }
 
