@@ -4,52 +4,106 @@ import com.example.petpassport_android_app.data.api.DoctorVisitApiService
 import com.example.petpassport_android_app.data.api.EventsApiService
 import com.example.petpassport_android_app.data.api.TreatmentApiService
 import com.example.petpassport_android_app.data.api.VaccineApiService
+import com.example.petpassport_android_app.data.mapper.mergeReminderStore
+import com.example.petpassport_android_app.data.mapper.toDomain
 import com.example.petpassport_android_app.data.mapper.toDto
 import com.example.petpassport_android_app.domain.model.Event.DoctorVisit
 import com.example.petpassport_android_app.domain.model.Event.PetEvent
 import com.example.petpassport_android_app.domain.model.Event.Treatment
 import com.example.petpassport_android_app.domain.model.Event.Vaccine
-import com.example.petpassport_android_app.data.mapper.toDomain
 import com.example.petpassport_android_app.domain.repository.EventMedicineRepository
+import com.example.petpassport_android_app.domain.repository.EventReminderRepository
 import javax.inject.Inject
 
 class EventMedicineRepositoryImpl @Inject constructor(
     private val eventsApi: EventsApiService,
     private val vaccineApi: VaccineApiService,
     private val treatmentApi: TreatmentApiService,
-    private val doctorApi: DoctorVisitApiService
+    private val doctorApi: DoctorVisitApiService,
+    private val eventReminderRepository: EventReminderRepository,
 ) : EventMedicineRepository {
+
     override suspend fun getPetEvents(petId: Int): List<PetEvent> {
         return try {
-            eventsApi.getUpcomingEvents(petId).map {
-                it.toDomain()
-            }
-            } catch (e: Exception) {
+            val list = eventsApi.getUpcomingEvents(petId).map { it.toDomain() }
+            list.mergeReminderStore(eventReminderRepository.snapshot())
+        } catch (e: Exception) {
             emptyList()
         }
     }
 
-    override suspend fun addVaccine(vaccine: Vaccine): Boolean {
+    override suspend fun addVaccine(vaccine: Vaccine): Int? {
         return try {
             vaccineApi.createVaccine(vaccine.toDto())
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    override suspend fun addTreatment(treatment: Treatment): Int? {
+        return try {
+            treatmentApi.createTreatment(treatment.toDto()).takeIf { it > 0 }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    override suspend fun addDoctorVisit(visit: DoctorVisit): Int? {
+        return try {
+            doctorApi.createDoctorVisit(visit.toDto()).takeIf { it > 0 }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    override suspend fun deleteVaccine(id: Int): Boolean {
+        return try {
+            vaccineApi.deleteVaccine(id)
             true
         } catch (e: Exception) {
             false
         }
     }
 
-    override suspend fun addTreatment(treatment: Treatment): Boolean {
+    override suspend fun deleteTreatment(id: Int): Boolean {
         return try {
-            treatmentApi.createTreatment(treatment.toDto())
+            treatmentApi.deleteTreatment(id)
             true
         } catch (e: Exception) {
             false
         }
     }
 
-    override suspend fun addDoctorVisit(visit: DoctorVisit): Boolean {
+    override suspend fun deleteDoctorVisit(id: Int): Boolean {
         return try {
-            doctorApi.createDoctorVisit(visit.toDto())
+            doctorApi.deleteDoctorVisit(id)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun updateVaccine(id: Int, vaccine: Vaccine): Boolean {
+        return try {
+            vaccineApi.updateVaccine(id, vaccine.toDto())
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun updateTreatment(id: Int, treatment: Treatment): Boolean {
+        return try {
+            treatmentApi.updateTreatment(id, treatment.toDto())
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun updateDoctorVisit(id: Int, visit: DoctorVisit): Boolean {
+        return try {
+            doctorApi.updateDoctorVisit(id, visit.toDto())
             true
         } catch (e: Exception) {
             false

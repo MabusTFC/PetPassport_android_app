@@ -11,7 +11,7 @@ import retrofit2.http.Path
 interface TreatmentApiService {
 
     @POST("api/treatment")
-    suspend fun createTreatment(@Body treatment: TreatmentDto): TreatmentDto
+    suspend fun createTreatment(@Body treatment: TreatmentDto): Int
 
     @GET("api/treatment/{id}")
     suspend fun getTreatmentById(@Path("id") id: Int): TreatmentDto

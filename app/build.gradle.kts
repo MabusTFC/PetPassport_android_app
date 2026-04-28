@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     kotlin("kapt")
     id("dagger.hilt.android.plugin")
+    id("kotlin-parcelize")
 }
 
 android {
@@ -105,5 +106,8 @@ dependencies {
     val coil3 = "3.0.4"
     implementation("io.coil-kt.coil3:coil-compose:${coil3}")
     implementation("io.coil-kt.coil3:coil-network-okhttp:${coil3}")
+
+    val datastore = "1.1.1"
+    implementation("androidx.datastore:datastore-preferences:${datastore}")
 
 }

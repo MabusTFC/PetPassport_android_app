@@ -1,57 +1,104 @@
 package com.example.petpassport_android_app.presentation.screens.events
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.petpassport_android_app.domain.model.Event.*
+import com.example.petpassport_android_app.domain.model.Event.EventReminderUiPayload
 import com.example.petpassport_android_app.presentation.components.EventCard
 import com.example.petpassport_android_app.presentation.theme.AppColors
 import com.example.petpassport_android_app.R
 import com.example.petpassport_android_app.presentation.details.Card.TopBarCard
+import com.example.petpassport_android_app.presentation.screens.home.NewPrimaryDark
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventsScreenContent(
     state: EventsScreenModel.State,
+    petName: String = "",
+    isNotificationsEnabled: Boolean = true,
     onBack: () -> Unit,
-    onAddEvent: (PetEvent) -> Unit
+    onAddEvent: (PetEvent, EventReminderUiPayload) -> Unit,
+    onEventClick: (PetEvent) -> Unit = {},
+    onCompleteEvent: (PetEvent) -> Unit = {},
+    onToggleNotifications: (Boolean) -> Unit = {},
+    onEventReminderToggle: (PetEvent, Boolean) -> Unit = { _, _ -> },
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
     Scaffold(
+        containerColor = Color(0xFFF3F3F8),
         topBar = {
-            TopBarCard(
-                title = "Процедуры",
-                iconRes = R.drawable.ic_spritz,
-                onBack = onBack
-            )
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TextButton(onClick = onBack) {
+                        Icon(Icons.Default.KeyboardArrowLeft, null, tint = NewPrimaryDark)
+                        Text("Назад", color = NewPrimaryDark, fontWeight = FontWeight.Bold)
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_cat),
+                            contentDescription = null,
+                            tint = NewPrimaryDark,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            text = petName,
+                            color = Color.Gray,
+                            fontSize = 16.sp
+                        )
+                        Spacer(Modifier.width(8.dp))
+                    }
+                }
+            }
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showDialog = true },
-                containerColor = AppColors.Primary,
-                contentColor = AppColors.White,
+                shape = CircleShape,
+                containerColor = NewPrimaryDark,
+                contentColor = Color.White,
+                modifier = Modifier.size(56.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Добавить")
             }
-
         }
-
-
     ) { padding ->
-
         Box(
             modifier = Modifier
                 .padding(padding)
@@ -66,13 +113,32 @@ fun EventsScreenContent(
 
                 is EventsScreenModel.State.Success -> {
                     LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 8.dp,
+                            bottom = 80.dp
+                        ),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
+                        item {
+                            Text(
+                                text = "Предстоящие процедуры",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = NewPrimaryDark,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+                        }
                         items(state.events) { event ->
                             EventCard(
-                                event,
-                                //onClick = {}
+                                event = event,
+                                onClick = { onEventClick(event) },
+                                globalNotificationsEnabled = isNotificationsEnabled,
+                                initialReminderEnabled = event.reminderEnabled,
+                                onReminderToggle = { enabled ->
+                                    onEventReminderToggle(event, enabled)
+                                }
                             )
                         }
                     }
@@ -87,8 +153,8 @@ fun EventsScreenContent(
             if (showDialog) {
                 AddEventsDialog(
                     onDismiss = { showDialog = false },
-                    onAdd = { newEvent ->
-                        onAddEvent(newEvent)
+                    onAdd = { newEvent, reminderPayload ->
+                        onAddEvent(newEvent, reminderPayload)
                         showDialog = false
                     }
                 )
@@ -192,7 +258,7 @@ fun EventsScreenSuccessPreview() {
             events = fakeEvents
         ),
         onBack = {},
-        onAddEvent = {}
+        onAddEvent = { _, _ -> }
     )
 }
 

@@ -1,53 +1,50 @@
 package com.example.petpassport_android_app.presentation.components
 
-
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.petpassport_android_app.domain.model.Event.*
-import com.example.petpassport_android_app.presentation.details.Card.EventDetailsDialog
-
-import com.example.petpassport_android_app.presentation.details.Card.RoundedRectangleCard
-import com.example.petpassport_android_app.presentation.details.Card.eventIconRes
-import com.example.petpassport_android_app.presentation.details.Card.formatEventDate
-import com.example.petpassport_android_app.presentation.theme.AppColors
 import com.example.petpassport_android_app.R
-
-
+import com.example.petpassport_android_app.domain.model.Event.*
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun EventCard(
-    event: PetEvent
+    event: PetEvent,
+    onClick: () -> Unit = {},
+    showOverdueColor: Boolean = true,
+    /** Global notifications master switch from preferences. */
+    globalNotificationsEnabled: Boolean = true,
+    /** Per-event flag from model (after merge with local store). */
+    initialReminderEnabled: Boolean = true,
+    onReminderToggle: ((Boolean) -> Unit)? = null
 ) {
-    // Цвета из макета
     val primaryDark = Color(0xFF2E1A7A)
     val bellBlue = Color(0xFF5AB6FF)
     val badgeBg = Color(0xFFF2F3F7)
-    val borderColor = Color(0xFFE0E0E0)
 
-    // Определяем текст категории в зависимости от типа события
+    val bellOn = globalNotificationsEnabled && initialReminderEnabled
+    var isReminderEnabled by rememberSaveable(event.id) { mutableStateOf(bellOn) }
+    LaunchedEffect(event.id, globalNotificationsEnabled, initialReminderEnabled) {
+        isReminderEnabled = globalNotificationsEnabled && initialReminderEnabled
+    }
+
     val categoryLabel = when (event) {
         is Vaccine -> "Вакцинация"
         is Treatment -> "Обработка"
@@ -55,89 +52,129 @@ fun EventCard(
         else -> "Процедура"
     }
 
+    val rawDate = event.date
+    val datePart = try {
+        val localDate = LocalDate.parse(
+            rawDate.substringBefore("T"),
+            DateTimeFormatter.ISO_LOCAL_DATE
+        )
+        localDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+    } catch (e: Exception) {
+        rawDate.substringBefore("T")
+    }
+
+    val timePart = try {
+        rawDate.substringAfter("T").substringBefore(":00Z").let {
+            if (it.length == 5) it else rawDate.substringAfter("T").take(5)
+        }
+    } catch (e: Exception) {
+        ""
+    }
+
+    val isOverdue = remember(event.date) {
+        try {
+            val date = LocalDate.parse(rawDate.substringBefore("T"), DateTimeFormatter.ISO_LOCAL_DATE)
+            date.isBefore(LocalDate.now())
+        } catch (e: Exception) { false }
+    }
+
+    val dateColor = if (isOverdue && showOverdueColor) Color(0xFFE53935) else primaryDark
+
     Card(
         shape = RoundedCornerShape(32.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(0.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
     ) {
         Column(
             modifier = Modifier
                 .padding(top = 20.dp, bottom = 24.dp, start = 20.dp, end = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // --- ВЕРХНИЙ РЯД (Иконка + Дата) ---
+            // --- ВЕРХНИЙ РЯД (Колокольчик + Дата) ---
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
+                // Колокольчик — переключатель уведомлений
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_notification_on),
-                    contentDescription = null,
-                    tint = bellBlue,
+                    painter = painterResource(
+                        id = if (isReminderEnabled) R.drawable.ic_notification_on
+                        else R.drawable.ic_notification_off
+                    ),
+                    contentDescription = if (isReminderEnabled) "Уведомление включено"
+                    else "Уведомление выключено",
+                    tint = if (isReminderEnabled) bellBlue else Color.LightGray,
                     modifier = Modifier
                         .size(32.dp)
                         .align(Alignment.CenterStart)
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onTap = {
+                                    if (!globalNotificationsEnabled) return@detectTapGestures
+                                    isReminderEnabled = !isReminderEnabled
+                                    onReminderToggle?.invoke(isReminderEnabled)
+                                }
+                            )
+                        }
                 )
 
                 // Плашка с датой
                 Surface(
-                    shape = RoundedCornerShape(32.dp), // Максимальное скругление (овал)
-                    border = BorderStroke(1.dp, Color(0xFFE0E0E0)), // Тонкая серая рамка
+                    shape = RoundedCornerShape(32.dp),
+                    border = BorderStroke(
+                        1.dp,
+                        if (isOverdue && showOverdueColor) Color(0xFFE53935).copy(alpha = 0.5f)
+                        else Color(0xFFE0E0E0)
+                    ),
                     color = Color.White
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // 📅 Иконка календаря с часами
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_calendar), // Убедитесь, что это иконка как на фото
+                            painter = painterResource(id = R.drawable.ic_calendar),
                             contentDescription = null,
                             modifier = Modifier.size(24.dp),
-                            tint = primaryDark
+                            tint = if (isOverdue && showOverdueColor) Color(0xFFE53935) else bellBlue
                         )
-
                         Spacer(modifier = Modifier.width(12.dp))
-
-                        // 🗓 Текст даты (например: 30 сентября 2025)
                         Text(
-                            text = event.date.substringBefore("|").trim(), // Берем часть до разделителя
+                            text = datePart,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Normal,
-                            color = primaryDark
+                            color = dateColor
                         )
-
-                        // 📏 Вертикальный разделитель (серая линия)
-                        Box(
-                            modifier = Modifier
-                                .padding(horizontal = 12.dp)
-                                .width(1.dp)
-                                .height(16.dp)
-                                .background(Color(0xFFE0E0E0))
-                        )
-
-                        // ⏰ Текст времени (например: 13:00)
-                        Text(
-                            text = event.date.substringAfter("|").trim(), // Берем часть после разделителя
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = primaryDark
-                        )
+                        if (timePart.isNotBlank()) {
+                            Box(
+                                modifier = Modifier
+                                    .padding(horizontal = 12.dp)
+                                    .width(1.dp)
+                                    .height(16.dp)
+                                    .background(Color(0xFFE0E0E0))
+                            )
+                            Text(
+                                text = timePart,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Normal,
+                                color = dateColor
+                            )
+                        }
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- КАТЕГОРИЯ ---
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = badgeBg,
                 shape = RoundedCornerShape(20.dp)
             ) {
                 Text(
-                    // ДИНАМИЧЕСКАЯ КАТЕГОРИЯ
                     text = categoryLabel,
                     modifier = Modifier.padding(vertical = 10.dp),
                     fontSize = 16.sp,
@@ -148,9 +185,7 @@ fun EventCard(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- ЗАГОЛОВОК ---
             Text(
-                // ДИНАМИЧЕСКИЙ ЗАГОЛОВОК
                 text = event.title,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
@@ -162,20 +197,48 @@ fun EventCard(
     }
 }
 
-
-
-@Preview(showBackground = true, name = "Vaccine")
+@Preview(showBackground = true, name = "Vaccine — включено")
 @Composable
 fun EventCardVaccinePreview() {
     EventCard(
         event = Vaccine(
             id = 1,
             title = "Прививка от бешенства",
-            date = "12.04.2024",
+            date = "2027-05-01T13:00:00Z",
             petId = 1,
             medicine = "Nobivac Rabies"
         ),
-        //onClick = {}
+        initialReminderEnabled = true
+    )
+}
+
+@Preview(showBackground = true, name = "Vaccine — выключено")
+@Composable
+fun EventCardVaccineReminderOffPreview() {
+    EventCard(
+        event = Vaccine(
+            id = 1,
+            title = "Прививка от бешенства",
+            date = "2027-05-01T13:00:00Z",
+            petId = 1,
+            medicine = "Nobivac Rabies"
+        ),
+        initialReminderEnabled = false
+    )
+}
+
+@Preview(showBackground = true, name = "Vaccine — просрочена")
+@Composable
+fun EventCardVaccineOverduePreview() {
+    EventCard(
+        event = Vaccine(
+            id = 1,
+            title = "Прививка от бешенства",
+            date = "2024-03-12T13:00:00Z",
+            petId = 1,
+            medicine = "Nobivac Rabies"
+        ),
+        initialReminderEnabled = true
     )
 }
 
@@ -186,13 +249,13 @@ fun EventCardTreatmentPreview() {
         event = Treatment(
             id = 2,
             title = "Обработка от клещей",
-            date = "05.03.2024",
+            date = "2027-06-15T10:00:00Z",
             petId = 1,
             remedy = "Bravecto",
             parasite = "Клещи",
-            nextTreatmentDate = "05.06.2024"
+            nextTreatmentDate = "2027-09-15"
         ),
-        //onClick = {}
+        initialReminderEnabled = true
     )
 }
 
@@ -203,14 +266,12 @@ fun EventCardDoctorVisitPreview() {
         event = DoctorVisit(
             id = 3,
             title = "Осмотр у ветеринара",
-            date = "20.02.2024",
+            date = "2027-04-20T15:00:00Z",
             petId = 1,
             clinic = "VetLife",
             doctor = "Иванов И.И.",
             diagnosis = "Аллергия"
         ),
-        //onClick = {}
+        initialReminderEnabled = true
     )
 }
-
-

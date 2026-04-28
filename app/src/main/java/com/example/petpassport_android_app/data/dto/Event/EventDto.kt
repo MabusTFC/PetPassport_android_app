@@ -9,5 +9,6 @@ data class EventDto(
     @SerializedName("eventDate") val eventDate: String,
     @SerializedName("clinic") val clinic: String?,
     @SerializedName("medicine") val medicine: String?,
-    @SerializedName("remedy") val remedy: String?
+    @SerializedName("remedy") val remedy: String?,
+    @SerializedName("reminderEnabled") val reminderEnabled: Boolean? = null,
 )

@@ -20,16 +20,21 @@ import cafe.adriel.voyager.hilt.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.petpassport_android_app.domain.model.Event.DoctorVisit
+import com.example.petpassport_android_app.domain.model.Event.PetEvent
 import com.example.petpassport_android_app.domain.model.Event.Treatment
 import com.example.petpassport_android_app.domain.model.Event.Vaccine
+import com.example.petpassport_android_app.presentation.screens.eventDetail.EventDetailScreenContent
 import com.example.petpassport_android_app.presentation.screens.events.EventsScreenContent
 import com.example.petpassport_android_app.presentation.screens.events.EventsScreenModel
+import com.example.petpassport_android_app.presentation.screens.events.eventDetails.EventDetailScreenModel
 import com.example.petpassport_android_app.presentation.screens.login.LoginScreenContent
 import com.example.petpassport_android_app.presentation.screens.login.LoginScreenModel
 import com.example.petpassport_android_app.presentation.screens.home.PetListScreenContent
 import com.example.petpassport_android_app.presentation.screens.home.PetListScreenModel
 import com.example.petpassport_android_app.presentation.screens.login.LoginEntryContent
 import com.example.petpassport_android_app.presentation.screens.login.RegisterEntryContent
+import com.example.petpassport_android_app.presentation.screens.medicalHistory.MedicalHistoryScreenContent
+import com.example.petpassport_android_app.presentation.screens.medicalHistory.MedicalHistoryScreenModel
 import com.example.petpassport_android_app.presentation.screens.petProfile.PetProfileScreenContent
 import com.example.petpassport_android_app.presentation.screens.petProfile.PetProfileScreenModel
 
@@ -132,7 +137,16 @@ class PetProfileNavigationScreen(
         val navigator = LocalNavigator.currentOrThrow
         val model = getScreenModel<PetProfileScreenModel>()
         val state by model.state.collectAsState()
+        val isNotificationsEnabled by model.isNotificationsEnabled.collectAsState()
         val context = LocalContext.current
+
+        val currentPetName by rememberUpdatedState(
+            when (val s = state) {
+                is PetProfileScreenModel.State.View -> s.pet.name
+                is PetProfileScreenModel.State.Edit -> s.pet.name
+                else -> ""
+            }
+        )
 
         LaunchedEffect(petId) {
             model.loadPetById(petId)
@@ -140,12 +154,37 @@ class PetProfileNavigationScreen(
 
         PetProfileScreenContent(
             state = state,
-            onBack = { navigator.pop() }, // Закрыть весь экран профиля
+            isNotificationsEnabled = isNotificationsEnabled,
+            onBack = { navigator.pop() },
             onEditProfile = { model.enableEditMode() },
             onSavePet = { model.savePet(it) },
-            onDismissEdit = { model.dismissEditMode() }, // Вернуться из Edit в View
+            onDismissEdit = { model.dismissEditMode() },
+            onEventReminderToggle = { ev, enabled ->
+                model.onEventReminderToggle(context, ev, enabled)
+            },
             onOpenEvents = {
-                navigator.push(EventsNavigationScreen(petId))
+                val petName = when (val s = state) {
+                    is PetProfileScreenModel.State.View -> s.pet.name
+                    is PetProfileScreenModel.State.Edit -> s.pet.name
+                    else -> ""
+                }
+                navigator.push(EventsNavigationScreen(petId = petId, petName = petName))
+            },
+            onOpenHistory = {
+                val petName = when (val s = state) {
+                    is PetProfileScreenModel.State.View -> s.pet.name
+                    is PetProfileScreenModel.State.Edit -> s.pet.name
+                    else -> ""
+                }
+                navigator.push(MedicalHistoryNavigationScreen(petId = petId, petName = petName))
+            },
+            onEventClick = { event ->
+                val petName = when (val s = state) {
+                    is PetProfileScreenModel.State.View -> s.pet.name
+                    is PetProfileScreenModel.State.Edit -> s.pet.name
+                    else -> ""
+                }
+                navigator.push(EventDetailNavigationScreen(event = event, petName = petName))
             },
             onUploadPhoto = { bytes -> model.uploadPhoto(petId, bytes) },
             context = context
@@ -153,9 +192,9 @@ class PetProfileNavigationScreen(
     }
 }
 
-
 class EventsNavigationScreen(
-    private val petId: Int
+    private val petId: Int,
+    private val petName: String
 ) : Screen {
 
     @Composable
@@ -163,6 +202,8 @@ class EventsNavigationScreen(
         val navigator = LocalNavigator.currentOrThrow
         val model = getScreenModel<EventsScreenModel>()
         val state by model.state.collectAsState()
+        val isNotificationsEnabled by model.isNotificationsEnabled.collectAsState()
+        val context = LocalContext.current
 
         LaunchedEffect(petId) {
             model.loadEvents(petId)
@@ -170,17 +211,92 @@ class EventsNavigationScreen(
 
         EventsScreenContent(
             state = state,
+            petName = petName,
+            isNotificationsEnabled = isNotificationsEnabled,
             onBack = { navigator.pop() },
-            onAddEvent = { event ->
+            onEventClick = { event ->
+                navigator.push(EventDetailNavigationScreen(event = event, petName = petName))
+            },
+            onToggleNotifications = { enabled ->
+                model.toggleNotifications(context, enabled)
+            },
+            onEventReminderToggle = { ev, enabled ->
+                model.onEventReminderToggle(context, ev, enabled)
+            },
+            onAddEvent = { event, reminder ->
                 when (event) {
-                    is Vaccine -> model.addVaccine(event.copy(petId = petId), petId)
-                    is Treatment -> model.addTreatment(event.copy(petId = petId), petId)
-                    is DoctorVisit -> model.addDoctorVisit(event.copy(petId = petId), petId)
+                    is Vaccine -> model.addVaccine(context, event.copy(petId = petId), petId, reminder)
+                    is Treatment -> model.addTreatment(context, event.copy(petId = petId), petId, reminder)
+                    is DoctorVisit -> model.addDoctorVisit(context, event.copy(petId = petId), petId, reminder)
                 }
             }
         )
     }
 }
+
+class MedicalHistoryNavigationScreen(
+    private val petId: Int,
+    private val petName: String
+) : Screen {
+
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val model = getScreenModel<MedicalHistoryScreenModel>()
+        val state by model.state.collectAsState()
+        val isNotificationsEnabled by model.isNotificationsEnabled.collectAsState()
+        val context = LocalContext.current
+
+        LaunchedEffect(petId) {
+            model.loadHistory(petId)
+        }
+
+        MedicalHistoryScreenContent(
+            state = state,
+            petName = petName,
+            isNotificationsEnabled = isNotificationsEnabled,
+            onBack = { navigator.pop() },
+            onEventClick = { event ->
+                navigator.push(EventDetailNavigationScreen(event = event, petName = petName))
+            },
+            onEventReminderToggle = { ev, enabled ->
+                model.onEventReminderToggle(context, ev, enabled)
+            }
+        )
+    }
+}
+
+class EventDetailNavigationScreen(
+    private val event: PetEvent,
+    private val petName: String
+) : Screen {
+
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val model = getScreenModel<EventDetailScreenModel>()
+        val state by model.state.collectAsState()
+
+        LaunchedEffect(state) {
+            if (state is EventDetailScreenModel.State.Deleted ||
+                state is EventDetailScreenModel.State.Saved) {
+                navigator.pop()
+            }
+        }
+
+        val context = LocalContext.current
+        EventDetailScreenContent(
+            event = event,
+            petName = petName,
+            onBack = { navigator.pop() },
+            onSave = { updatedEvent -> model.updateEvent(context, updatedEvent) },
+            onDelete = { model.deleteEvent(context, event) },
+            isLoading = state is EventDetailScreenModel.State.Loading
+        )
+    }
+}
+
+
 
 
 

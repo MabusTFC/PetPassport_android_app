@@ -1,4 +1,4 @@
-package com.example.petpassport_android_app.presentation.screens.events
+package com.example.petpassport_android_app.presentation.details.Card
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -17,48 +17,84 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.petpassport_android_app.R
-import com.example.petpassport_android_app.domain.model.Event.*
-import com.example.petpassport_android_app.domain.model.Event.EventReminderUiPayload
+import com.example.petpassport_android_app.domain.model.Event.DoctorVisit
+import com.example.petpassport_android_app.domain.model.Event.PetEvent
+import com.example.petpassport_android_app.domain.model.Event.Treatment
+import com.example.petpassport_android_app.domain.model.Event.Vaccine
 import com.example.petpassport_android_app.notification.EventNotificationPlanner
-import com.example.petpassport_android_app.presentation.screens.home.*
+import com.example.petpassport_android_app.presentation.screens.home.AppDropdownMenu
+import com.example.petpassport_android_app.presentation.screens.home.CustomInputField
+import com.example.petpassport_android_app.presentation.screens.home.LabelText
+import com.example.petpassport_android_app.presentation.screens.events.CustomAreaField
+import com.example.petpassport_android_app.presentation.screens.home.NewPrimaryDark
 import java.text.SimpleDateFormat
 import java.util.*
 
-private val NewPrimaryDark = Color(0xFF2E1A7A)
-private val NewBgColor = Color(0xFFF4F5F9)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddEventsDialog(
+fun EditEventBottomSheet(
+    event: PetEvent,
     onDismiss: () -> Unit,
-    onAdd: (PetEvent, EventReminderUiPayload) -> Unit
+    onSave: (PetEvent) -> Unit,
+    onDelete: () -> Unit = {}
 ) {
-    var selectedType by remember { mutableStateOf("Прием") }
-    var title by remember { mutableStateOf("") }
-    var clinicName by remember { mutableStateOf("") }
-    var doctorName by remember { mutableStateOf("") }
-    var dateDisplay by remember { mutableStateOf(SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date())) }
-    var timeDisplay by remember { mutableStateOf("13:00") }
-    var diagnosis by remember { mutableStateOf("") }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scrollState = rememberScrollState()
+
+    // Тип события
+    val eventType = remember {
+        when (event) {
+            is Vaccine -> "Вакцинация"
+            is Treatment -> "Лечение"
+            is DoctorVisit -> "Приём"
+            else -> "Приём"
+        }
+    }
+
+    // Общие поля
+    var title by remember { mutableStateOf(event.title) }
+    var dateDisplay by remember {
+        mutableStateOf(
+            try {
+                event.date.substringBefore("T").split("-").let { "${it[2]}.${it[1]}.${it[0]}" }
+            } catch (e: Exception) { event.date.substringBefore("T") }
+        )
+    }
+    var timeDisplay by remember {
+        mutableStateOf(
+            try { event.date.substringAfter("T").take(5) }
+            catch (e: Exception) { "13:00" }
+        )
+    }
+    var dateForApi by remember { mutableStateOf(event.date.substringBefore("T")) }
+
+    // Vaccine
+    var medicine by remember { mutableStateOf(if (event is Vaccine) event.medicine else "") }
+
+    // Treatment
+    var remedy by remember { mutableStateOf(if (event is Treatment) event.remedy else "") }
+    var parasite by remember { mutableStateOf(if (event is Treatment) event.parasite else "") }
+
+    // DoctorVisit
+    var clinic by remember { mutableStateOf(if (event is DoctorVisit) event.clinic else "") }
+    var doctor by remember { mutableStateOf(if (event is DoctorVisit) event.doctor else "") }
+    var diagnosis by remember { mutableStateOf(if (event is DoctorVisit) event.diagnosis else "") }
     var recommendations by remember { mutableStateOf("") }
     var directions by remember { mutableStateOf("") }
-    var medicine by remember { mutableStateOf("") }
-    var remedy by remember { mutableStateOf("") }
-    var parasite by remember { mutableStateOf("") }
 
-    var isReminderEnabled by remember { mutableStateOf(true) }
-    var selectedReminders by remember { mutableStateOf(setOf<Long>()) }
+    // Напоминания
+    var isReminderEnabled by remember { mutableStateOf(event.reminderEnabled) }
+    var selectedReminders by remember { mutableStateOf(event.reminderOffsetsMinutes.toSet()) }
     var showCustomReminderDialog by remember { mutableStateOf(false) }
     var customHours by remember { mutableStateOf("") }
     var customMinutes by remember { mutableStateOf("") }
 
-    val scrollState = rememberScrollState()
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var isSaving by remember { mutableStateOf(false) }
-
+    // DatePicker
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
-    var dateForApi by remember { mutableStateOf(SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())) }
+
+    // Диалог удаления
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     // --- ДАТАПИКЕР ---
     if (showDatePicker) {
@@ -67,9 +103,9 @@ fun AddEventsDialog(
             confirmButton = {
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let { millis ->
-                        val selectedDate = Date(millis)
-                        dateDisplay = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(selectedDate)
-                        dateForApi = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(selectedDate)
+                        val selected = Date(millis)
+                        dateDisplay = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(selected)
+                        dateForApi = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(selected)
                     }
                     showDatePicker = false
                 }) { Text("ОК", color = NewPrimaryDark) }
@@ -86,9 +122,7 @@ fun AddEventsDialog(
             onDismissRequest = { showCustomReminderDialog = false },
             containerColor = Color.White,
             shape = RoundedCornerShape(20.dp),
-            title = {
-                Text("Своё время", fontWeight = FontWeight.Bold, color = NewPrimaryDark)
-            },
+            title = { Text("Своё время", fontWeight = FontWeight.Bold, color = NewPrimaryDark) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
@@ -119,23 +153,39 @@ fun AddEventsDialog(
                 TextButton(onClick = {
                     val totalMinutes = (customHours.toLongOrNull() ?: 0L) * 60 +
                             (customMinutes.toLongOrNull() ?: 0L)
-                    if (totalMinutes > 0) {
-                        selectedReminders = selectedReminders + totalMinutes
-                    }
+                    if (totalMinutes > 0) selectedReminders = selectedReminders + totalMinutes
                     showCustomReminderDialog = false
                     customHours = ""
                     customMinutes = ""
-                }) {
-                    Text("Добавить", color = NewPrimaryDark, fontWeight = FontWeight.Bold)
-                }
+                }) { Text("Добавить", color = NewPrimaryDark, fontWeight = FontWeight.Bold) }
             },
             dismissButton = {
                 TextButton(onClick = {
                     showCustomReminderDialog = false
                     customHours = ""
                     customMinutes = ""
-                }) {
-                    Text("Отмена", color = Color.Gray)
+                }) { Text("Отмена", color = Color.Gray) }
+            }
+        )
+    }
+
+    // --- ДИАЛОГ УДАЛЕНИЯ ---
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(20.dp),
+            title = { Text("Удалить процедуру?", fontWeight = FontWeight.Bold, color = NewPrimaryDark) },
+            text = { Text("Это действие нельзя отменить", color = Color.Gray) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteDialog = false
+                    onDelete()
+                }) { Text("Удалить", color = Color(0xFFE53935), fontWeight = FontWeight.Bold) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Отмена", color = NewPrimaryDark)
                 }
             }
         )
@@ -156,22 +206,25 @@ fun AddEventsDialog(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Заголовок
             Text(
-                text = "Добавить процедуру",
+                text = event.title,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = NewPrimaryDark,
-                modifier = Modifier.padding(vertical = 16.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
             )
 
             Divider(color = Color(0xFFF0F0F0))
 
-            // Тип
-            LabelText("Выберите тип")
+            // Тип (только для отображения, не меняем)
+            LabelText("Тип процедуры")
             AppDropdownMenu(
-                options = listOf("Прием", "Вакцинация", "Лечение", "Осмотр"),
-                selectedOption = selectedType,
-                onOptionSelected = { selectedType = it }
+                options = listOf(eventType),
+                selectedOption = eventType,
+                onOptionSelected = {}
             )
 
             // Название
@@ -179,22 +232,22 @@ fun AddEventsDialog(
             CustomInputField(value = title, onValueChange = { title = it }, placeholder = "Введите название")
 
             // Специфичные поля по типу
-            when (selectedType) {
-                "Вакцинация" -> {
+            when (event) {
+                is Vaccine -> {
                     LabelText("Препарат")
                     CustomInputField(value = medicine, onValueChange = { medicine = it }, placeholder = "Название препарата")
                 }
-                "Лечение" -> {
+                is Treatment -> {
                     LabelText("Препарат")
                     CustomInputField(value = remedy, onValueChange = { remedy = it }, placeholder = "Название препарата")
                     LabelText("Паразит")
                     CustomInputField(value = parasite, onValueChange = { parasite = it }, placeholder = "Тип паразита")
                 }
-                else -> {
+                is DoctorVisit -> {
                     LabelText("Клиника")
-                    CustomInputField(value = clinicName, onValueChange = { clinicName = it }, placeholder = "Введите название")
+                    CustomInputField(value = clinic, onValueChange = { clinic = it }, placeholder = "Введите название")
                     LabelText("Врач")
-                    CustomInputField(value = doctorName, onValueChange = { doctorName = it }, placeholder = "Введите имя")
+                    CustomInputField(value = doctor, onValueChange = { doctor = it }, placeholder = "Введите имя")
                     LabelText("Диагноз")
                     CustomAreaField(value = diagnosis, onValueChange = { diagnosis = it }, placeholder = "Диагноз")
                     LabelText("Рекомендации")
@@ -210,7 +263,7 @@ fun AddEventsDialog(
                 CustomInputField(
                     value = dateDisplay,
                     onValueChange = {},
-                    placeholder = "",
+                    placeholder = "дд.мм.гггг",
                     readOnly = true,
                     trailingIcon = { Icon(Icons.Default.DateRange, null, tint = Color.Gray) }
                 )
@@ -223,7 +276,7 @@ fun AddEventsDialog(
 
             Spacer(Modifier.height(24.dp))
 
-            // Напоминание — переключатель
+            // Напоминание
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -261,7 +314,6 @@ fun AddEventsDialog(
                         .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Фиксированные чипы
                     listOf(5L to "5 минут", 60L to "1 час", 1440L to "1 день").forEach { (minutes, label) ->
                         val selected = minutes in selectedReminders
                         Surface(
@@ -272,10 +324,7 @@ fun AddEventsDialog(
                                     selectedReminders + minutes
                             },
                             shape = RoundedCornerShape(20.dp),
-                            border = BorderStroke(
-                                1.dp,
-                                if (selected) NewPrimaryDark else Color(0xFFE0E0E0)
-                            ),
+                            border = BorderStroke(1.dp, if (selected) NewPrimaryDark else Color(0xFFE0E0E0)),
                             color = if (selected) NewPrimaryDark else Color.White
                         ) {
                             Text(
@@ -287,11 +336,8 @@ fun AddEventsDialog(
                         }
                     }
 
-                    // Кнопка + кастомное время
                     Surface(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clickable { showCustomReminderDialog = true },
+                        modifier = Modifier.size(40.dp).clickable { showCustomReminderDialog = true },
                         shape = RoundedCornerShape(12.dp),
                         border = BorderStroke(1.dp, Color(0xFFE0E0E0)),
                         color = Color.White
@@ -302,7 +348,6 @@ fun AddEventsDialog(
                     }
                 }
 
-                // Кастомные чипы
                 val customReminders = selectedReminders - setOf(5L, 60L, 1440L)
                 if (customReminders.isNotEmpty()) {
                     Spacer(Modifier.height(8.dp))
@@ -346,7 +391,7 @@ fun AddEventsDialog(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 32.dp),
+                    .padding(bottom = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 OutlinedButton(
@@ -357,11 +402,9 @@ fun AddEventsDialog(
                 ) {
                     Text("Отменить", color = NewPrimaryDark, fontWeight = FontWeight.Bold)
                 }
-
                 Button(
                     onClick = {
                         val isoDateTime = "${dateForApi}T${timeDisplay}:00Z"
-
                         val offsetsSorted = selectedReminders.toList().sorted()
                         val effectiveOffsets = when {
                             !isReminderEnabled -> emptyList()
@@ -369,108 +412,111 @@ fun AddEventsDialog(
                             else -> listOf(EventNotificationPlanner.defaultOffsetIfEmptyMinutes)
                         }
                         val reminderEffective = isReminderEnabled && effectiveOffsets.isNotEmpty()
-                        val event: PetEvent = when (selectedType) {
-                            "Вакцинация" -> Vaccine(
-                                id = 0,
-                                title = title.ifBlank { "Вакцинация" },
+                        val updated: PetEvent = when (event) {
+                            is Vaccine -> event.copy(
+                                title = title,
                                 date = isoDateTime,
-                                petId = 0,
                                 medicine = medicine,
                                 reminderEnabled = reminderEffective,
                                 reminderOffsetsMinutes = if (reminderEffective) effectiveOffsets else emptyList(),
                             )
-                            "Лечение" -> Treatment(
-                                id = 0,
-                                title = title.ifBlank { "Лечение" },
+                            is Treatment -> event.copy(
+                                title = title,
                                 date = isoDateTime,
-                                petId = 0,
                                 remedy = remedy,
                                 parasite = parasite,
-                                nextTreatmentDate = null,
                                 reminderEnabled = reminderEffective,
                                 reminderOffsetsMinutes = if (reminderEffective) effectiveOffsets else emptyList(),
                             )
-                            else -> DoctorVisit(
-                                id = 0,
-                                title = title.ifBlank { selectedType },
+                            is DoctorVisit -> event.copy(
+                                title = title,
                                 date = isoDateTime,
-                                petId = 0,
-                                clinic = clinicName,
-                                doctor = doctorName,
+                                clinic = clinic,
+                                doctor = doctor,
                                 diagnosis = diagnosis,
                                 reminderEnabled = reminderEffective,
                                 reminderOffsetsMinutes = if (reminderEffective) effectiveOffsets else emptyList(),
                             )
                         }
 
-                        onAdd(
-                            event,
-                            EventReminderUiPayload(
-                                enabled = reminderEffective,
-                                offsetsMinutes = if (reminderEffective) effectiveOffsets else emptyList(),
-                            ),
-                        )
+                        onSave(updated)
                     },
                     modifier = Modifier.weight(1f).height(56.dp),
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = NewPrimaryDark),
                     enabled = title.isNotBlank()
                 ) {
-                    if (isSaving) {
-                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                    } else {
-                        Text("Добавить", color = Color.White, fontWeight = FontWeight.Bold)
-                    }
+                    Text("Сохранить", color = Color.White, fontWeight = FontWeight.Bold)
                 }
+            }
+
+            // Удалить
+            TextButton(
+                onClick = { showDeleteDialog = true },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp)
+            ) {
+                Text("Удалить", color = Color.Gray, fontSize = 16.sp)
             }
         }
     }
 }
 
+@Preview(showBackground = true, name = "Edit Vaccine")
 @Composable
-fun CustomAreaField(value: String, onValueChange: (String) -> Unit, placeholder: String) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        placeholder = { Text(placeholder, color = Color.LightGray) },
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 100.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            unfocusedBorderColor = Color(0xFFE0E0E0),
-            focusedBorderColor = NewPrimaryDark,
-            unfocusedContainerColor = Color.White,
-            focusedContainerColor = Color.White
-        )
-    )
-}
-
-@Composable
-fun ReminderChip(text: String) {
-    Surface(
-        shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(1.dp, Color(0xFFE0E0E0)),
-        color = Color.White
-    ) {
-        Text(
-            text = text,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            fontSize = 14.sp,
-            color = NewPrimaryDark
+fun EditEventVaccinePreview() {
+    MaterialTheme {
+        EditEventBottomSheet(
+            event = Vaccine(
+                id = 1,
+                title = "Вакцинация от туберкулеза",
+                date = "2026-07-01T13:00:00Z",
+                petId = 1,
+                medicine = "Nobivac"
+            ),
+            onDismiss = {},
+            onSave = {}
         )
     }
 }
 
-@Preview(showBackground = true, name = "Add Events Dialog")
+@Preview(showBackground = true, name = "Edit DoctorVisit")
 @Composable
-fun AddEventsDialogPreview() {
+fun EditEventDoctorVisitPreview() {
     MaterialTheme {
-        AddEventsDialog(
+        EditEventBottomSheet(
+            event = DoctorVisit(
+                id = 2,
+                title = "Приём ветеринара",
+                date = "2026-04-05T15:00:00Z",
+                petId = 1,
+                clinic = "ВетКлиник",
+                doctor = "Иванова А.С.",
+                diagnosis = "Здоров"
+            ),
             onDismiss = {},
-            onAdd = { event, _ ->
-                android.util.Log.d("Preview", "Добавлено событие: $event")
-            }
+            onSave = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Edit Treatment")
+@Composable
+fun EditEventTreatmentPreview() {
+    MaterialTheme {
+        EditEventBottomSheet(
+            event = Treatment(
+                id = 3,
+                title = "Обработка от клещей",
+                date = "2026-06-15T10:00:00Z",
+                petId = 1,
+                remedy = "Bravecto",
+                parasite = "Клещи",
+                nextTreatmentDate = "2026-09-15"
+            ),
+            onDismiss = {},
+            onSave = {}
         )
     }
 }

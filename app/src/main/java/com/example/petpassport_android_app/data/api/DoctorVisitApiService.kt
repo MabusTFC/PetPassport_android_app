@@ -10,7 +10,7 @@ import retrofit2.http.Path
 
 interface DoctorVisitApiService {
     @POST("api/doctor-visit")
-    suspend fun createDoctorVisit(@Body doctorVisit: DoctorVisitDto): DoctorVisitDto
+    suspend fun createDoctorVisit(@Body doctorVisit: DoctorVisitDto): Int
 
     @GET("api/doctor-visit/{id}")
     suspend fun getDoctorVisitById(@Path("id") id: Int): DoctorVisitDto
