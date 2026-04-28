@@ -20,6 +20,7 @@ import cafe.adriel.voyager.hilt.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.petpassport_android_app.domain.model.Event.DoctorVisit
+import com.example.petpassport_android_app.domain.model.Event.EventReminderUiPayload
 import com.example.petpassport_android_app.domain.model.Event.PetEvent
 import com.example.petpassport_android_app.domain.model.Event.Treatment
 import com.example.petpassport_android_app.domain.model.Event.Vaccine
@@ -151,6 +152,16 @@ class PetProfileNavigationScreen(
         LaunchedEffect(petId) {
             model.loadPetById(petId)
         }
+        val lifecycleOwner = LocalLifecycleOwner.current
+        DisposableEffect(lifecycleOwner) {
+            val observer = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    model.loadPetById(petId)
+                }
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+        }
 
         PetProfileScreenContent(
             state = state,
@@ -205,8 +216,15 @@ class EventsNavigationScreen(
         val isNotificationsEnabled by model.isNotificationsEnabled.collectAsState()
         val context = LocalContext.current
 
-        LaunchedEffect(petId) {
-            model.loadEvents(petId)
+        val lifecycleOwner = LocalLifecycleOwner.current
+        DisposableEffect(lifecycleOwner) {
+            val observer = LifecycleEventObserver { _, lifecycleEvent ->
+                if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+                    model.loadEvents(petId)
+                }
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
         }
 
         EventsScreenContent(
@@ -220,14 +238,14 @@ class EventsNavigationScreen(
             onToggleNotifications = { enabled ->
                 model.toggleNotifications(context, enabled)
             },
-            onEventReminderToggle = { ev, enabled ->
-                model.onEventReminderToggle(context, ev, enabled)
+            onEventReminderToggle = { event, enabled ->
+                model.onEventReminderToggle(context, event, enabled)
             },
-            onAddEvent = { event, reminder ->
-                when (event) {
-                    is Vaccine -> model.addVaccine(context, event.copy(petId = petId), petId, reminder)
-                    is Treatment -> model.addTreatment(context, event.copy(petId = petId), petId, reminder)
-                    is DoctorVisit -> model.addDoctorVisit(context, event.copy(petId = petId), petId, reminder)
+            onAddEvent = { newEvent, reminder ->  // ← теперь два параметра
+                when (newEvent) {
+                    is Vaccine -> model.addVaccine(context, newEvent.copy(petId = petId), petId, reminder)
+                    is Treatment -> model.addTreatment(context, newEvent.copy(petId = petId), petId, reminder)
+                    is DoctorVisit -> model.addDoctorVisit(context, newEvent.copy(petId = petId), petId, reminder)
                 }
             }
         )
@@ -249,6 +267,16 @@ class MedicalHistoryNavigationScreen(
 
         LaunchedEffect(petId) {
             model.loadHistory(petId)
+        }
+        val lifecycleOwner = LocalLifecycleOwner.current
+        DisposableEffect(lifecycleOwner) {
+            val observer = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    model.loadHistory(petId)
+                }
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
         }
 
         MedicalHistoryScreenContent(
@@ -276,6 +304,7 @@ class EventDetailNavigationScreen(
         val navigator = LocalNavigator.currentOrThrow
         val model = getScreenModel<EventDetailScreenModel>()
         val state by model.state.collectAsState()
+        val context = LocalContext.current
 
         LaunchedEffect(state) {
             if (state is EventDetailScreenModel.State.Deleted ||
@@ -284,7 +313,6 @@ class EventDetailNavigationScreen(
             }
         }
 
-        val context = LocalContext.current
         EventDetailScreenContent(
             event = event,
             petName = petName,

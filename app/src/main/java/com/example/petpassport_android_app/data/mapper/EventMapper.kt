@@ -85,43 +85,38 @@ fun DoctorVisit.toDto(): DoctorVisitDto {
 
 fun EventDto.toDomain(): PetEvent {
     return when (this.type) {
-        "vaccine" -> {
-            Vaccine(
-                id = this.id,
-                title = this.title,
-                date = this.eventDate,
-                petId = 0,
-                medicine = this.medicine ?: "Не указано",
-                reminderEnabled = this.reminderEnabled ?: true,
-                reminderOffsetsMinutes = emptyList(),
-            )
-        }
-
-        "treatment" -> {
-            Treatment(
-                id = this.id,
-                title = this.title,
-                date = this.eventDate,
-                petId = 0,
-                remedy = this.remedy ?: "Не указано",
-                parasite = "Не указано",
-                nextTreatmentDate = null,
-            )
-        }
-
-        "doctor-visit" -> {
-            DoctorVisit(
-                id = this.id,
-                title = this.title,
-                date = this.eventDate,
-                petId = 0,
-                clinic = this.clinic ?: "Не указана",
-                doctor = "Не указан",
-                diagnosis = "Нет диагноза",
-            )
-        }
-
-        else -> throw IllegalArgumentException()
+        "vaccine" -> Vaccine(
+            id = this.id,
+            title = this.title,
+            date = this.eventDate,
+            petId = 0,
+            medicine = this.medicine ?: "Не указано",
+            reminderEnabled = this.reminderEnabled ?: false,
+            reminderOffsetsMinutes = emptyList(),
+        )
+        "treatment" -> Treatment(
+            id = this.id,
+            title = this.title,
+            date = this.eventDate,
+            petId = 0,
+            remedy = this.remedy ?: "Не указано",
+            parasite = this.parasite ?: "Не указано",
+            nextTreatmentDate = this.nextTreatmentDate?.substringBefore("T"),
+            reminderEnabled = this.reminderEnabled ?: false,
+            reminderOffsetsMinutes = emptyList(),
+        )
+        "doctor-visit" -> DoctorVisit(
+            id = this.id,
+            title = this.title,
+            date = this.eventDate,
+            petId = 0,
+            clinic = this.clinic ?: "Не указана",
+            doctor = this.doctor ?: "Не указан",
+            diagnosis = this.diagnosis ?: "Нет диагноза",
+            reminderEnabled = this.reminderEnabled ?: false,
+            reminderOffsetsMinutes = emptyList(),
+        )
+        else -> throw IllegalArgumentException("Unknown type: ${this.type}")
     }
 }
 

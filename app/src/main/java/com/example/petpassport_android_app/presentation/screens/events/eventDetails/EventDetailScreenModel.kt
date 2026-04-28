@@ -18,10 +18,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
 class EventDetailScreenModel @Inject constructor(
-    private val repository: EventMedicineRepository,
-    private val eventReminderRepository: EventReminderRepository,
-    private val notificationPrefs: NotificationPreferencesRepository,
+    private val repository: EventMedicineRepository
 ) : ScreenModel {
 
     sealed class State {
@@ -38,13 +37,8 @@ class EventDetailScreenModel @Inject constructor(
     fun deleteEvent(context: Context, event: PetEvent) {
         screenModelScope.launch {
             _state.value = State.Loading
-            val st = eventReminderRepository.getState(event.id)
-            val cancel = EventNotificationPlanner.offsetsToCancelBeforeReschedule(
-                previouslyStoredOffsets = st?.offsetsMinutes.orEmpty(),
-                modelOffsets = event.reminderOffsetsMinutes,
-            )
-            NotificationScheduler.cancelAll(context, event.id, cancel)
-            eventReminderRepository.remove(event.id)
+            // Отменяем все уведомления для этого события
+            NotificationScheduler.cancelAll(context, event.id)
             val success = when (event) {
                 is Vaccine -> repository.deleteVaccine(event.id)
                 is Treatment -> repository.deleteTreatment(event.id)
@@ -57,24 +51,12 @@ class EventDetailScreenModel @Inject constructor(
     fun updateEvent(context: Context, event: PetEvent) {
         screenModelScope.launch {
             _state.value = State.Loading
-            val previous = eventReminderRepository.getState(event.id)
+            // Отменяем старые уведомления перед обновлением
+            NotificationScheduler.cancelAll(context, event.id)
             val success = when (event) {
                 is Vaccine -> repository.updateVaccine(event.id, event)
                 is Treatment -> repository.updateTreatment(event.id, event)
                 is DoctorVisit -> repository.updateDoctorVisit(event.id, event)
-            }
-            if (success) {
-                val cancel = EventNotificationPlanner.offsetsToCancelBeforeReschedule(
-                    previouslyStoredOffsets = previous?.offsetsMinutes.orEmpty(),
-                    modelOffsets = event.reminderOffsetsMinutes + (previous?.offsetsMinutes.orEmpty()),
-                )
-                rescheduleFromModel(
-                    context = context,
-                    event = event,
-                    eventReminderRepository = eventReminderRepository,
-                    notificationPreferencesRepository = notificationPrefs,
-                    cancelOffsets = cancel,
-                )
             }
             _state.value = if (success) State.Saved else State.Error("Ошибка сохранения")
         }
