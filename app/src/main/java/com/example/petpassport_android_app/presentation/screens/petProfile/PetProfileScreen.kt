@@ -40,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.petpassport_android_app.domain.model.Event.EventReminderUiPayload
 import com.example.petpassport_android_app.domain.model.Event.PetEvent
 
 import com.example.petpassport_android_app.domain.model.Pet
@@ -60,6 +61,7 @@ fun PetProfileScreenContent(
     onUploadPhoto: (ByteArray?) -> Unit,
     onEventClick: (PetEvent) -> Unit = {},
     onEventReminderToggle: (PetEvent, Boolean) -> Unit = { _, _ -> },
+    onAddEvent: (PetEvent, EventReminderUiPayload) -> Unit = { _, _ -> },
     onDismissEdit: () -> Unit,
     context: Context
 ) {
@@ -85,6 +87,7 @@ fun PetProfileScreenContent(
                         onOpenEvents = onOpenEvents,
                         onOpenHistory = onOpenHistory,
                         onEventClick = onEventClick,
+                        onAddEvent = onAddEvent,
                         globalNotificationsEnabled = isNotificationsEnabled,
                         onEventReminderToggle = onEventReminderToggle,
                     )

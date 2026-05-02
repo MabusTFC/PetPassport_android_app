@@ -197,6 +197,13 @@ class PetProfileNavigationScreen(
                 }
                 navigator.push(EventDetailNavigationScreen(event = event, petName = petName))
             },
+            onAddEvent = { newEvent, reminder ->  // ← добавили
+                when (newEvent) {
+                    is Vaccine -> model.addVaccine(context, newEvent.copy(petId = petId), petId, reminder)
+                    is Treatment -> model.addTreatment(context, newEvent.copy(petId = petId), petId, reminder)
+                    is DoctorVisit -> model.addDoctorVisit(context, newEvent.copy(petId = petId), petId, reminder)
+                }
+            },
             onUploadPhoto = { bytes -> model.uploadPhoto(petId, bytes) },
             context = context
         )
@@ -241,7 +248,7 @@ class EventsNavigationScreen(
             onEventReminderToggle = { event, enabled ->
                 model.onEventReminderToggle(context, event, enabled)
             },
-            onAddEvent = { newEvent, reminder ->  // ← теперь два параметра
+            onAddEvent = { newEvent, reminder ->
                 when (newEvent) {
                     is Vaccine -> model.addVaccine(context, newEvent.copy(petId = petId), petId, reminder)
                     is Treatment -> model.addTreatment(context, newEvent.copy(petId = petId), petId, reminder)

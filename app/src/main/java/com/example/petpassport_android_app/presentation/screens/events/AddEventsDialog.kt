@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,6 +24,10 @@ import com.example.petpassport_android_app.notification.EventNotificationPlanner
 import com.example.petpassport_android_app.presentation.screens.home.*
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+
 
 private val NewPrimaryDark = Color(0xFF2E1A7A)
 private val NewBgColor = Color(0xFFF4F5F9)
@@ -147,13 +152,17 @@ fun AddEventsDialog(
         containerColor = Color.White,
         shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
         dragHandle = { BottomSheetDefaults.DragHandle(color = Color.LightGray) },
-        modifier = Modifier.fillMaxHeight(0.92f)
+        // ← убрали modifier = Modifier.fillMaxHeight(0.92f)
+        contentWindowInsets = { WindowInsets(0) } // ← убираем стандартные insets
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .heightIn(max = LocalConfiguration.current.screenHeightDp.dp * 0.88f) // ← максимум 88% экрана
                 .verticalScroll(scrollState)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 24.dp)
+                .navigationBarsPadding() // ← отступ от навигационной полосы
+                .imePadding(), // ← отступ от клавиатуры
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(

@@ -18,6 +18,12 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
+import com.example.petpassport_android_app.domain.model.Event.DoctorVisit
+import com.example.petpassport_android_app.domain.model.Event.EventReminderUiPayload
+import com.example.petpassport_android_app.domain.model.Event.Treatment
+import com.example.petpassport_android_app.domain.model.Event.Vaccine
+import com.example.petpassport_android_app.notification.EventNotificationPlanner
+import kotlinx.coroutines.flow.first
 
 class PetProfileScreenModel @Inject constructor(
     private val petRepository: PetRepository,
@@ -139,4 +145,102 @@ class PetProfileScreenModel @Inject constructor(
             lastPetId?.let { loadPetById(it) }
         }
     }
+
+
+    fun addVaccine(context: Context, vaccine: Vaccine, petId: Int, reminder: EventReminderUiPayload) {
+        screenModelScope.launch {
+            val newId = eventRepository.addVaccine(vaccine.copy(petId = petId)) ?: run {
+                loadPetById(petId)
+                return@launch
+            }
+            val saved = vaccine.copy(
+                id = newId,
+                petId = petId,
+                reminderEnabled = reminder.enabled,
+                reminderOffsetsMinutes = reminder.offsetsMinutes,
+            )
+            val global = notificationPrefs.isNotificationsEnabled.first()
+            eventReminderRepository.setState(
+                eventId = newId,
+                enabled = reminder.enabled,
+                offsetsMinutes = reminder.offsetsMinutes,
+                titleForNotification = saved.title,
+                eventDateIso = saved.date,
+            )
+            EventNotificationPlanner.reschedule(
+                context = context,
+                event = saved,
+                globalNotificationsEnabled = global,
+                cancelOffsets = EventNotificationPlanner.offsetsToCancelBeforeReschedule(
+                    emptyList(), reminder.offsetsMinutes
+                ),
+            )
+            loadPetById(petId)
+        }
+    }
+
+    fun addTreatment(context: Context, treatment: Treatment, petId: Int, reminder: EventReminderUiPayload) {
+        screenModelScope.launch {
+            val newId = eventRepository.addTreatment(treatment.copy(petId = petId)) ?: run {
+                loadPetById(petId)
+                return@launch
+            }
+            val saved = treatment.copy(
+                id = newId,
+                petId = petId,
+                reminderEnabled = reminder.enabled,
+                reminderOffsetsMinutes = reminder.offsetsMinutes,
+            )
+            val global = notificationPrefs.isNotificationsEnabled.first()
+            eventReminderRepository.setState(
+                eventId = newId,
+                enabled = reminder.enabled,
+                offsetsMinutes = reminder.offsetsMinutes,
+                titleForNotification = saved.title,
+                eventDateIso = saved.date,
+            )
+            EventNotificationPlanner.reschedule(
+                context = context,
+                event = saved,
+                globalNotificationsEnabled = global,
+                cancelOffsets = EventNotificationPlanner.offsetsToCancelBeforeReschedule(
+                    emptyList(), reminder.offsetsMinutes
+                ),
+            )
+            loadPetById(petId)
+        }
+    }
+
+    fun addDoctorVisit(context: Context, visit: DoctorVisit, petId: Int, reminder: EventReminderUiPayload) {
+        screenModelScope.launch {
+            val newId = eventRepository.addDoctorVisit(visit.copy(petId = petId)) ?: run {
+                loadPetById(petId)
+                return@launch
+            }
+            val saved = visit.copy(
+                id = newId,
+                petId = petId,
+                reminderEnabled = reminder.enabled,
+                reminderOffsetsMinutes = reminder.offsetsMinutes,
+            )
+            val global = notificationPrefs.isNotificationsEnabled.first()
+            eventReminderRepository.setState(
+                eventId = newId,
+                enabled = reminder.enabled,
+                offsetsMinutes = reminder.offsetsMinutes,
+                titleForNotification = saved.title,
+                eventDateIso = saved.date,
+            )
+            EventNotificationPlanner.reschedule(
+                context = context,
+                event = saved,
+                globalNotificationsEnabled = global,
+                cancelOffsets = EventNotificationPlanner.offsetsToCancelBeforeReschedule(
+                    emptyList(), reminder.offsetsMinutes
+                ),
+            )
+            loadPetById(petId)
+        }
+    }
+
 }

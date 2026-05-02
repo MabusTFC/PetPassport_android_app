@@ -10,6 +10,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,11 +27,13 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.example.petpassport_android_app.R
 import com.example.petpassport_android_app.domain.model.Event.DoctorVisit
+import com.example.petpassport_android_app.domain.model.Event.EventReminderUiPayload
 import com.example.petpassport_android_app.domain.model.Event.PetEvent
 import com.example.petpassport_android_app.domain.model.Event.Treatment
 import com.example.petpassport_android_app.domain.model.Event.Vaccine
 import com.example.petpassport_android_app.domain.model.Pet
 import com.example.petpassport_android_app.presentation.components.EventCard
+import com.example.petpassport_android_app.presentation.screens.events.AddEventsDialog
 
 private val NewBgColor = Color(0xFFF4F5F9)
 private val NewPrimaryDark = Color(0xFF2E1A7A)
@@ -41,10 +47,23 @@ fun PetProfileCard(
     onOpenEvents: () -> Unit,
     onOpenHistory: () -> Unit = {},
     onEventClick: (PetEvent) -> Unit = {},
+    onAddEvent: (PetEvent, EventReminderUiPayload) -> Unit = { _, _ -> },
     globalNotificationsEnabled: Boolean = true,
     onEventReminderToggle: (PetEvent, Boolean) -> Unit = { _, _ -> },
 ) {
     val scrollState = rememberScrollState()
+    var showAddDialog by remember { mutableStateOf(false) }
+
+
+    if (showAddDialog) {
+        AddEventsDialog(
+            onDismiss = { showAddDialog = false },
+            onAdd = { newEvent, reminder ->
+                onAddEvent(newEvent, reminder)
+                showAddDialog = false
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -119,7 +138,7 @@ fun PetProfileCard(
                 Spacer(Modifier.height(24.dp))
 
                 Button(
-                    onClick = onOpenEvents,
+                    onClick = { showAddDialog = true },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
