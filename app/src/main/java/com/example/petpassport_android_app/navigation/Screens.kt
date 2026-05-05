@@ -47,7 +47,11 @@ class LoginNavigationScreen : Screen {
         val model = getScreenModel<LoginScreenModel>()
         val state by model.state.collectAsState()
 
-        LaunchedEffect(Unit) { model.resetState() }
+        LaunchedEffect(Unit) {
+            model.checkAuth(navigator)
+            model.resetState()
+        }
+
         LoginScreenContent(
             state = state,
             onLoginClick = { navigator.push(LoginEntryNavigationScreen()) },
@@ -105,8 +109,10 @@ class PetListNavigationScreen() : Screen {
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val model = getScreenModel<PetListScreenModel>()
+        val loginModel = getScreenModel<LoginScreenModel>()
         val state by model.state.collectAsState()
         val petStates by model.petStates.collectAsState()
+        val profileLogin by model.profileLogin.collectAsState()
 
         LaunchedEffect(Unit) {
             model.retry()
@@ -115,13 +121,13 @@ class PetListNavigationScreen() : Screen {
         PetListScreenContent(
             state = state,
             petStates = petStates,
+            profileLogin = profileLogin,
             onRetry = { model.retry() },
             onAddPet = { model.addPet(it) },
-            onPetProfile = { petId ->
-                navigator.push(PetProfileNavigationScreen(petId))
-            },
+            onPetProfile = { petId -> navigator.push(PetProfileNavigationScreen(petId)) },
             onRefreshPet = { petId -> model.refreshPet(petId) },
-            onBack = {navigator.pop()}
+            onBack = { navigator.pop() },
+            onLogout = { loginModel.logout(navigator) }
         )
     }
 }

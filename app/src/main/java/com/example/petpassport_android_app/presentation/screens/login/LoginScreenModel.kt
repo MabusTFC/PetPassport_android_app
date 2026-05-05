@@ -13,8 +13,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class LoginScreenModel @Inject constructor(
-    private val authRepository: AuthRepository,
-    private val sharedPreferences: SharedPreferences
+    private val authRepository: AuthRepository
 ) : ScreenModel {
 
     sealed class State {
@@ -27,13 +26,22 @@ class LoginScreenModel @Inject constructor(
     private val _state = MutableStateFlow<State>(State.Idle)
     val state = _state.asStateFlow()
 
+    // ← вызывается при старте приложения — проверяем есть ли сохранённый токен
+    fun checkAuth(navigator: Navigator) {
+        screenModelScope.launch {
+            if (authRepository.isLoggedIn()) {
+                navigator.replace(PetListNavigationScreen())
+            }
+        }
+    }
+
     fun login(login: String, password: String, navigator: Navigator) {
         screenModelScope.launch {
             _state.value = State.Loading
             try {
                 val owner = authRepository.login(login, password)
                 if (owner != null) {
-                    saveOwnerData(owner, password)
+                    // ← токены сохраняются внутри AuthRepositoryImpl автоматически
                     _state.value = State.Success
                     navigator.push(PetListNavigationScreen())
                 } else {
@@ -51,7 +59,7 @@ class LoginScreenModel @Inject constructor(
             try {
                 val owner = authRepository.register(login, password)
                 if (owner != null) {
-                    saveOwnerData(owner, password)
+                    // ← токены сохраняются внутри AuthRepositoryImpl автоматически
                     _state.value = State.Success
                     navigator.push(PetListNavigationScreen())
                 } else {
@@ -63,12 +71,11 @@ class LoginScreenModel @Inject constructor(
         }
     }
 
-    private fun saveOwnerData(owner: Owner, password: String) {
-        sharedPreferences.edit()
-            .putInt("owner_id", owner.id ?: -1)
-            .putString("login", owner.login)
-            .putString("password", password)
-            .apply()
+    fun logout(navigator: Navigator) {
+        screenModelScope.launch {
+            authRepository.logout()
+            navigator.replaceAll(PetListNavigationScreen()) // ← или LoginNavigationScreen
+        }
     }
 
     fun resetState() {

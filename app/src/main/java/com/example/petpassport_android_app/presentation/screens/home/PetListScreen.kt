@@ -1,7 +1,7 @@
 package com.example.petpassport_android_app.presentation.screens.home
 
-
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,25 +17,19 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-
 import com.example.petpassport_android_app.R
 import com.example.petpassport_android_app.domain.model.Pet
 import com.example.petpassport_android_app.presentation.details.Card.*
-
-
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
 
-
-// Цвета из нового дизайна
 val NewBgColor = Color(0xFFF4F5F9)
 val NewPrimaryDark = Color(0xFF2E1A7A)
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PetListScreenContent(
     state: PetListScreenModel.PetsState,
@@ -44,28 +38,68 @@ fun PetListScreenContent(
     onAddPet: (Pet) -> Unit,
     onPetProfile: (Int) -> Unit,
     onRefreshPet: (Int) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    profileLogin: String = "",
+    onLogout: () -> Unit = {}
 ) {
     var showDialog by remember { mutableStateOf(false) }
-    val horizontalPadding = 20.dp // Единый отступ для всего экрана
+    var showProfile by remember { mutableStateOf(false) }
+    val horizontalPadding = 20.dp
+
+    // --- ШТОРКА ПРОФИЛЯ ---
+    if (showProfile) {
+        UserProfileScreenContent(
+            login = profileLogin,
+            onDismiss = { showProfile = false },
+            onLogout = {
+                showProfile = false
+                onLogout()
+            }
+        )
+    }
 
     Scaffold(
         containerColor = NewBgColor,
         topBar = {
-            Box(
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .statusBarsPadding()
-                    .padding(top = 10.dp, bottom = 10.dp)
+                    .padding(horizontal = horizontalPadding, vertical = 10.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                shape = RoundedCornerShape(20.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.top_bar_logo),
-                    contentDescription = null,
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = horizontalPadding), // 20.dp
-                    contentScale = ContentScale.FillWidth
-                )
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.logo_pet_passport),
+                        contentDescription = null,
+                        modifier = Modifier.height(32.dp),
+                        contentScale = ContentScale.Fit
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFFEEEEF2))
+                            .clickable { showProfile = true },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_profile),
+                            contentDescription = "Профиль",
+                            tint = NewPrimaryDark,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
             }
         },
         floatingActionButton = {
@@ -80,7 +114,6 @@ fun PetListScreenContent(
             }
         }
     ) { innerPadding ->
-        // Box на весь экран для центрирования EmptyState
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -90,7 +123,6 @@ fun PetListScreenContent(
                 is PetListScreenModel.PetsState.Loading -> LoadingCard("Загружаем...")
 
                 is PetListScreenModel.PetsState.Empty -> {
-                    // Теперь это будет ровно по центру экрана
                     EmptyPetsState(20.dp)
                 }
 
@@ -101,8 +133,8 @@ fun PetListScreenContent(
                         contentPadding = PaddingValues(
                             top = 16.dp,
                             bottom = 100.dp,
-                            start = horizontalPadding, // 20.dp
-                            end = horizontalPadding   // 20.dp
+                            start = horizontalPadding,
+                            end = horizontalPadding
                         )
                     ) {
                         item {
@@ -127,7 +159,6 @@ fun PetListScreenContent(
                             when (cardState) {
                                 is PetListScreenModel.PetCardState.Loading -> PetCardLoading()
                                 is PetListScreenModel.PetCardState.Success -> {
-                                    // Используем новый дизайн карточки
                                     PetCard(
                                         pet = cardState.pet,
                                         onClick = { onPetProfile(cardState.pet.id) }
@@ -141,16 +172,19 @@ fun PetListScreenContent(
                         }
                     }
                 }
+
                 is PetListScreenModel.PetsState.Error -> ErrorCard(state.mess)
             }
 
             if (showDialog) {
-                AddPetDialog(onDismiss = { showDialog = false }, onAdd = { onAddPet(it); showDialog = false })
+                AddPetDialog(
+                    onDismiss = { showDialog = false },
+                    onAdd = { onAddPet(it); showDialog = false }
+                )
             }
         }
     }
 }
-
 
 private fun fakePet(id: Int) = Pet(
     id = id,
@@ -178,15 +212,10 @@ fun PetListScreen_Empty_Preview() {
 @Preview(showBackground = true)
 @Composable
 fun PetListScreen_WithPets_Preview() {
-
-    val pets = List(8) { index ->
-        fakePet(index + 1)
-    }
-
+    val pets = List(8) { index -> fakePet(index + 1) }
     val petStates = pets.associate { pet ->
         pet.id to PetListScreenModel.PetCardState.Success(pet)
     }
-
     PetListScreenContent(
         state = PetListScreenModel.PetsState.Success(pets),
         petStates = petStates,

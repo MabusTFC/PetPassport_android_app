@@ -2,12 +2,15 @@ package com.example.petpassport_android_app.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.petpassport_android_app.data.api.AuthApiService
 import com.example.petpassport_android_app.data.api.DoctorVisitApiService
 import com.example.petpassport_android_app.data.api.EventsApiService
 import com.example.petpassport_android_app.data.api.OwnerApiService
 import com.example.petpassport_android_app.data.api.PetApiService
 import com.example.petpassport_android_app.data.api.TreatmentApiService
 import com.example.petpassport_android_app.data.api.VaccineApiService
+import com.example.petpassport_android_app.data.network.AuthInterceptor
+import com.example.petpassport_android_app.data.network.TokenRefreshInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,35 +30,28 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
-        val logging = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
-        }
-
+    fun provideOkHttpClient(
+        authInterceptor: AuthInterceptor,
+        tokenRefreshInterceptor: TokenRefreshInterceptor
+    ): OkHttpClient {
         return OkHttpClient.Builder()
-            .addInterceptor(logging)   // ← добавь
+            .addInterceptor(authInterceptor)
+            .addInterceptor(tokenRefreshInterceptor)
+            .addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            })
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
             .build()
     }
 
     @Provides
     @Singleton
-    fun provideRetrofit(): Retrofit {
-        val logging = HttpLoggingInterceptor()
-        logging.setLevel(HttpLoggingInterceptor.Level.BODY)
-
-        val client = OkHttpClient.Builder()
-            .addInterceptor(logging)
-            .connectTimeout(30, TimeUnit.SECONDS) // Ждем подключения 30 сек
-            .readTimeout(30, TimeUnit.SECONDS)    // Ждем ответа 30 сек
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .build()
-
-
+    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit { // ← принимает готовый клиент
         return Retrofit.Builder()
             .baseUrl("https://mypetpassport.ru:4443/")
-            .client(client)
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -110,6 +106,12 @@ object NetworkModule {
         @ApplicationContext context: Context
     ): SharedPreferences {
         return context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthApiService(retrofit: Retrofit): AuthApiService {
+        return retrofit.create(AuthApiService::class.java)
     }
 
 }

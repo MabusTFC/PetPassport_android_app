@@ -5,6 +5,7 @@ import android.util.Log
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.petpassport_android_app.domain.model.Pet
+import com.example.petpassport_android_app.domain.repository.AuthRepository
 import com.example.petpassport_android_app.domain.repository.OwnerRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,7 +16,7 @@ import javax.inject.Inject
 class PetListScreenModel @Inject constructor(
     val repository: OwnerRepository,
     val petRepository: com.example.petpassport_android_app.domain.repository.PetRepository,
-    val sharedPreferences: SharedPreferences
+    private val authRepository: AuthRepository
 ): ScreenModel {
 
     sealed class PetsState(){
@@ -37,8 +38,12 @@ class PetListScreenModel @Inject constructor(
     private val _petStates = MutableStateFlow<Map<Int, PetCardState>>(emptyMap())
     val petStates = _petStates.asStateFlow()
 
+    private val _profileLogin = MutableStateFlow("")
+    val profileLogin = _profileLogin.asStateFlow()
+
     init {
         loadPets()
+        loadProfile()
     }
 
     fun retry() {
@@ -49,9 +54,7 @@ class PetListScreenModel @Inject constructor(
         screenModelScope.launch {
 
             try {
-                val ownerId = sharedPreferences.getInt("owner_id", -1)
-                if (ownerId == -1) return@launch
-
+                val ownerId = authRepository.getOwnerId() ?: return@launch
                 val petsFromServer = repository.getPetsByOwner(ownerId)
 
                 val currentState = _state.value
@@ -127,9 +130,13 @@ class PetListScreenModel @Inject constructor(
                 }
             }
         }
+
     }
 
-
-
+    private fun loadProfile() {
+        screenModelScope.launch {
+            _profileLogin.value = authRepository.getLogin() ?: ""
+        }
+    }
 
 }
