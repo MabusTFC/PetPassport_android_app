@@ -9,12 +9,18 @@ import com.example.petpassport_android_app.domain.model.Event.PetEvent
 import com.example.petpassport_android_app.domain.model.Event.Treatment
 import com.example.petpassport_android_app.domain.model.Event.Vaccine
 import com.example.petpassport_android_app.domain.repository.EventReminderState
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 fun VaccineDto.toDomain(): Vaccine {
     return Vaccine(
         id = this.id ?: 0,
         title = this.title,
-        date = this.eventDate,
+        date = this.eventDate.toLocalEventIso(),
         petId = this.petId,
         medicine = this.medicine ?: "Не указано",
         reminderEnabled = this.reminderEnabled,
@@ -26,7 +32,7 @@ fun Vaccine.toDto(): VaccineDto {
     return VaccineDto(
         id = id.takeIf { it > 0 },
         title = this.title,
-        eventDate = this.date,
+        eventDate = this.date.toUtcApiIso(),
         reminderEnabled = this.reminderEnabled,
         petId = this.petId,
         medicine = this.medicine,
@@ -38,7 +44,7 @@ fun TreatmentDto.toDomain(): Treatment {
     return Treatment(
         id = id ?: 0,
         title = this.title,
-        date = this.eventDate,
+        date = this.eventDate.toLocalEventIso(),
         petId = this.petId,
         remedy = this.remedy ?: "Не указано",
         parasite = this.parasite ?: "Не указано",
@@ -50,7 +56,7 @@ fun Treatment.toDto(): TreatmentDto {
     return TreatmentDto(
         id = id.takeIf { it > 0 },
         title = this.title,
-        eventDate = this.date,
+        eventDate = this.date.toUtcApiIso(),
         petId = this.petId,
         remedy = this.remedy,
         parasite = this.parasite,
@@ -62,7 +68,7 @@ fun DoctorVisitDto.toDomain(): DoctorVisit {
     return DoctorVisit(
         id = id ?: 0,
         title = this.title,
-        date = this.eventDate,
+        date = this.eventDate.toLocalEventIso(),
         petId = this.petId,
         clinic = this.clinic ?: "Не указана",
         doctor = this.doctor ?: "Не указан",
@@ -74,7 +80,7 @@ fun DoctorVisit.toDto(): DoctorVisitDto {
     return DoctorVisitDto(
         id = id.takeIf { it > 0 },
         title = this.title,
-        eventDate = this.date,
+        eventDate = this.date.toUtcApiIso(),
         petId = this.petId,
         clinic = this.clinic,
         doctor = this.doctor,
@@ -88,7 +94,7 @@ fun EventDto.toDomain(): PetEvent {
         "vaccine" -> Vaccine(
             id = this.id,
             title = this.title,
-            date = this.eventDate,
+            date = this.eventDate.toLocalEventIso(),
             petId = 0,
             medicine = this.medicine ?: "Не указано",
             reminderEnabled = this.reminderEnabled ?: false,
@@ -97,7 +103,7 @@ fun EventDto.toDomain(): PetEvent {
         "treatment" -> Treatment(
             id = this.id,
             title = this.title,
-            date = this.eventDate,
+            date = this.eventDate.toLocalEventIso(),
             petId = 0,
             remedy = this.remedy ?: "Не указано",
             parasite = this.parasite ?: "Не указано",
@@ -108,7 +114,7 @@ fun EventDto.toDomain(): PetEvent {
         "doctor-visit" -> DoctorVisit(
             id = this.id,
             title = this.title,
-            date = this.eventDate,
+            date = this.eventDate.toLocalEventIso(),
             petId = 0,
             clinic = this.clinic ?: "Не указана",
             doctor = this.doctor ?: "Не указан",
@@ -137,3 +143,29 @@ fun PetEvent.mergeReminderFromStore(state: EventReminderState): PetEvent = when 
 
 fun List<PetEvent>.mergeReminderStore(store: Map<Int, EventReminderState>): List<PetEvent> =
     map { event -> store[event.id]?.let { event.mergeReminderFromStore(it) } ?: event }
+
+private fun String.toUtcApiIso(): String {
+    val zoned = runCatching { ZonedDateTime.parse(this) }.getOrNull()
+        ?: runCatching { OffsetDateTime.parse(this).toZonedDateTime() }.getOrNull()
+        ?: runCatching {
+            LocalDateTime.parse(substringBefore("Z")).atZone(ZoneId.systemDefault())
+        }.getOrNull()
+        ?: return this
+
+    return zoned
+        .withZoneSameInstant(ZoneOffset.UTC)
+        .format(DateTimeFormatter.ISO_INSTANT)
+}
+
+private fun String.toLocalEventIso(): String {
+    val zoned = runCatching { ZonedDateTime.parse(this) }.getOrNull()
+        ?: runCatching { OffsetDateTime.parse(this).toZonedDateTime() }.getOrNull()
+        ?: runCatching {
+            LocalDateTime.parse(substringBefore("Z")).atZone(ZoneOffset.UTC)
+        }.getOrNull()
+        ?: return this
+
+    return zoned
+        .withZoneSameInstant(ZoneId.systemDefault())
+        .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+}

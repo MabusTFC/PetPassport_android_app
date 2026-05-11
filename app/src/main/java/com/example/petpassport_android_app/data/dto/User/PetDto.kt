@@ -13,6 +13,13 @@ data class PetDto(
 )
 data class PhotoDto(
     @SerializedName("id") val id: Int,
-    @SerializedName("url") val url: String?,
+    @SerializedName(value = "url", alternate = ["photoUrl"]) val url: String?,
     @SerializedName("telegramFileId") val telegramFileId: String?
+)
+
+data class PetUpdateDto(
+    @SerializedName("name") val name: String,
+    @SerializedName("breed") val breed: String?,
+    @SerializedName("weightKg") val weight: Double,
+    @SerializedName("birthDate") val birthDate: String,
 )

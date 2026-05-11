@@ -125,11 +125,28 @@ class PetProfileScreenModel @Inject constructor(
                 val fullUrl = if (cleanPath.isNullOrBlank()) "" else "$baseUrl/$cleanPath"
                 val freshUrl = if (fullUrl.isNotEmpty()) "$fullUrl?t=${System.currentTimeMillis()}" else ""
 
-                val updatedPet = currentState.pet.copy(photoUrl = freshUrl)
+                val updatedPet = currentState.pet.copy(photoUrl = freshUrl, photoId = photoDto.id)
                 _state.value = State.Edit(updatedPet, currentState.events, isUploadingPhoto = false)
             }.onFailure { e ->
                 _state.value = State.Error("Ошибка загрузки фото: ${e.message}")
             }
+        }
+    }
+
+    fun deletePhoto(petId: Int) {
+        screenModelScope.launch {
+            val currentState = _state.value as? State.Edit ?: return@launch
+            val photoId = currentState.pet.photoId ?: return@launch
+            _state.value = currentState.copy(isUploadingPhoto = true)
+
+            petRepository.deletePetPhoto(petId, photoId)
+                .onSuccess {
+                    val updatedPet = currentState.pet.copy(photoUrl = "", photoId = null)
+                    _state.value = State.Edit(updatedPet, currentState.events, isUploadingPhoto = false)
+                }
+                .onFailure { e ->
+                    _state.value = State.Error("Ошибка удаления фото: ${e.message}")
+                }
         }
     }
 

@@ -37,6 +37,7 @@ fun PetProfileEditCard(
     onBack: () -> Unit,
     onSave: (Pet) -> Unit,
     onUploadPhoto: (ByteArray?) -> Unit,
+    onDeletePhoto: () -> Unit,
     isUploading: Boolean
 ) {
     // Состояния полей (подтягиваем текущие данные питомца)
@@ -167,7 +168,7 @@ fun PetProfileEditCard(
                     color = NewBgColor
                 ) {
                     AsyncImage(
-                        model = pet.photoUrl?.takeIf { it.isNotBlank() } ?: R.drawable.no_photo_pet,
+                        model = pet.photoUrl?.takeIf { it.isNotBlank() } ?: R.drawable.avatar_pet_default,
                         contentDescription = null,
                         contentScale = ContentScale.Crop
                     )
@@ -197,13 +198,14 @@ fun PetProfileEditCard(
                         )
                     }
 
+                    val canDeletePhoto = !pet.photoUrl.isNullOrBlank() && pet.photoId != null && !isUploading
                     Text(
                         text = "Удалить",
-                        color = Color.Gray,
+                        color = if (canDeletePhoto) Color(0xFFE53935) else Color.Gray,
                         fontSize = 14.sp,
                         modifier = Modifier
                             .padding(start = 28.dp, top = 4.dp)
-                            .clickable { /* Логика удаления фото */ }
+                            .clickable(enabled = canDeletePhoto) { onDeletePhoto() }
                     )
                 }
             }
@@ -268,6 +270,7 @@ fun PetProfileEditCardPreview() {
             onBack = {},
             onSave = {},
             onUploadPhoto = {},
+            onDeletePhoto = {},
             isUploading = false
         )
     }

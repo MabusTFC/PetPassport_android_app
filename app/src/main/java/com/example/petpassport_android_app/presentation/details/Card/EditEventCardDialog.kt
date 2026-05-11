@@ -408,7 +408,7 @@ fun EditEventBottomSheet(
                 }
                 Button(
                     onClick = {
-                        val isoDateTime = "${dateForApi}T${timeDisplay}:00Z"
+                        val isoDateTime = EventNotificationPlanner.localEventDateTimeIso(dateForApi, timeDisplay)
                         val offsetsSorted = selectedReminders.toList().sorted()
                         val effectiveOffsets = when {
                             !isReminderEnabled -> emptyList()

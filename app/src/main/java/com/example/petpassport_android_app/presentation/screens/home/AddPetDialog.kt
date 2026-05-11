@@ -166,14 +166,11 @@ fun AddPetDialog(
                             contentScale = ContentScale.Crop
                         )
                     } else {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.no_photo_pet),
-                                contentDescription = null,
-                                modifier = Modifier.size(40.dp),
-                                tint = Color.LightGray
-                            )
-                        }
+                        AsyncImage(
+                            model = R.drawable.avatar_pet_default,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop
+                        )
                     }
                 }
                 Spacer(Modifier.width(16.dp))

@@ -9,4 +9,5 @@ interface PetRepository {
     suspend fun updatePet(id: Int, pet: Pet): Pet?
 
     suspend fun uploadPetPhoto(petId: Int, imageBytes: ByteArray): Result<PhotoDto>
+    suspend fun deletePetPhoto(petId: Int, photoId: Int): Result<Unit>
 }

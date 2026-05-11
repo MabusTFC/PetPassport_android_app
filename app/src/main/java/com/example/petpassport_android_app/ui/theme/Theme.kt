@@ -36,9 +36,9 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun PetPassport_android_appTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = false,
     // Dynamic color доступен на Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

@@ -59,6 +59,7 @@ fun PetProfileScreenContent(
     onOpenEvents: () -> Unit,
     onOpenHistory: () -> Unit = {},
     onUploadPhoto: (ByteArray?) -> Unit,
+    onDeletePhoto: () -> Unit = {},
     onEventClick: (PetEvent) -> Unit = {},
     onEventReminderToggle: (PetEvent, Boolean) -> Unit = { _, _ -> },
     onAddEvent: (PetEvent, EventReminderUiPayload) -> Unit = { _, _ -> },
@@ -191,7 +192,8 @@ fun PetProfileScreenContent(
                 onBack = onDismissEdit,
                 onSave = onSavePet,
                 isUploading = state.isUploadingPhoto,
-                onUploadPhoto = onUploadPhoto
+                onUploadPhoto = onUploadPhoto,
+                onDeletePhoto = onDeletePhoto
             )
         }
     }
@@ -252,7 +254,6 @@ fun PetProfileScreenEditPreview() {
         )
     }
 }
-
 
 
 

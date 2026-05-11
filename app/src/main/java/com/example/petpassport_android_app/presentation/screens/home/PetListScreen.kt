@@ -78,7 +78,7 @@ fun PetListScreenContent(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.logo_pet_passport),
+                        painter = painterResource(id = R.drawable.logo),
                         contentDescription = null,
                         modifier = Modifier.height(32.dp),
                         contentScale = ContentScale.Fit

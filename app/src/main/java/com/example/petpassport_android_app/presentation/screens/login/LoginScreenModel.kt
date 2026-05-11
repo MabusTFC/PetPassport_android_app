@@ -6,6 +6,7 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.navigator.Navigator
 import com.example.petpassport_android_app.domain.model.Owner
 import com.example.petpassport_android_app.domain.repository.AuthRepository
+import com.example.petpassport_android_app.navigation.LoginNavigationScreen
 import com.example.petpassport_android_app.navigation.PetListNavigationScreen
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,9 +38,14 @@ class LoginScreenModel @Inject constructor(
 
     fun login(login: String, password: String, navigator: Navigator) {
         screenModelScope.launch {
+            val cleanLogin = login.trim()
+            if (cleanLogin.isBlank() || password.isBlank()) {
+                _state.value = State.Error("Введите логин и пароль")
+                return@launch
+            }
             _state.value = State.Loading
             try {
-                val owner = authRepository.login(login, password)
+                val owner = authRepository.login(cleanLogin, password)
                 if (owner != null) {
                     // ← токены сохраняются внутри AuthRepositoryImpl автоматически
                     _state.value = State.Success
@@ -55,9 +61,14 @@ class LoginScreenModel @Inject constructor(
 
     fun register(login: String, password: String, navigator: Navigator) {
         screenModelScope.launch {
+            val cleanLogin = login.trim()
+            if (cleanLogin.isBlank() || password.isBlank()) {
+                _state.value = State.Error("Введите логин и пароль")
+                return@launch
+            }
             _state.value = State.Loading
             try {
-                val owner = authRepository.register(login, password)
+                val owner = authRepository.register(cleanLogin, password)
                 if (owner != null) {
                     // ← токены сохраняются внутри AuthRepositoryImpl автоматически
                     _state.value = State.Success
@@ -74,7 +85,7 @@ class LoginScreenModel @Inject constructor(
     fun logout(navigator: Navigator) {
         screenModelScope.launch {
             authRepository.logout()
-            navigator.replaceAll(PetListNavigationScreen()) // ← или LoginNavigationScreen
+            navigator.replaceAll(LoginNavigationScreen())
         }
     }
 

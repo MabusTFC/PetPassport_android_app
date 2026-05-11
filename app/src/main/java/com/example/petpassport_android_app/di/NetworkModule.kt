@@ -2,6 +2,7 @@ package com.example.petpassport_android_app.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.petpassport_android_app.BuildConfig
 import com.example.petpassport_android_app.data.api.AuthApiService
 import com.example.petpassport_android_app.data.api.DoctorVisitApiService
 import com.example.petpassport_android_app.data.api.EventsApiService
@@ -50,11 +51,14 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit { // ← принимает готовый клиент
         return Retrofit.Builder()
-            .baseUrl("https://mypetpassport.ru:4443/")
+            .baseUrl(BuildConfig.BASE_URL.ensureTrailingSlash())
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
+
+    private fun String.ensureTrailingSlash(): String =
+        if (endsWith("/")) this else "$this/"
 
     //Владелец
     @Provides

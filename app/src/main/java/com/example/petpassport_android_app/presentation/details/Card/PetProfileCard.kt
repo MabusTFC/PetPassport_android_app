@@ -99,7 +99,7 @@ fun PetProfileCard(
 
         // --- ФОТО ---
         AsyncImage(
-            model = if (pet.photoUrl.isNullOrBlank()) R.drawable.no_photo_pet else pet.photoUrl,
+            model = pet.photoUrl?.takeIf { it.isNotBlank() } ?: R.drawable.avatar_pet_default,
             contentDescription = null,
             modifier = Modifier
                 .fillMaxWidth()

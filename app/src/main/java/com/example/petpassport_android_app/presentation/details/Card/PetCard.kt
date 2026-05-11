@@ -52,7 +52,7 @@ fun PetCard(
                 color = Color(0xFFF2F3F5)
             ) {
                 AsyncImage(
-                    model = pet.photoUrl?.takeIf { it.isNotBlank() } ?: R.drawable.avatar_pet_defualt,
+                    model = pet.photoUrl?.takeIf { it.isNotBlank() } ?: R.drawable.avatar_pet_default,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -98,5 +98,4 @@ fun PetCardPreview() {
     )
     {}
 }
-
 

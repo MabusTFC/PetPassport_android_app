@@ -211,6 +211,7 @@ class PetProfileNavigationScreen(
                 }
             },
             onUploadPhoto = { bytes -> model.uploadPhoto(petId, bytes) },
+            onDeletePhoto = { model.deletePhoto(petId) },
             context = context
         )
     }
@@ -336,7 +337,6 @@ class EventDetailNavigationScreen(
         )
     }
 }
-
 
 
 

@@ -29,8 +29,11 @@ android {
             properties.load(propertiesFile.inputStream())
         }
 
-        val baseUrl = properties.getProperty("BASE_URL") ?: "\"https://mypetpassport.ru:4443\""
-        buildConfigField("String", "BASE_URL", baseUrl)
+        val baseUrl = properties.getProperty("BASE_URL")
+            ?.trim()
+            ?.removeSurrounding("\"")
+            ?: "https://mypetpassport.ru:4443"
+        buildConfigField("String", "BASE_URL", "\"$baseUrl\"")
     }
 
     buildTypes {
