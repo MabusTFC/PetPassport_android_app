@@ -4,10 +4,12 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.hilt.ScreenModelKey
 import com.example.petpassport_android_app.data.repository.AuthRepositoryImpl
 import com.example.petpassport_android_app.data.repository.EventMedicineRepositoryImpl
+import com.example.petpassport_android_app.data.repository.EventTemplateRepositoryImpl
 import com.example.petpassport_android_app.data.repository.OwnerRepositoryImpl
 import com.example.petpassport_android_app.data.repository.PetRepositoryImpl
 import com.example.petpassport_android_app.domain.repository.AuthRepository
 import com.example.petpassport_android_app.domain.repository.EventMedicineRepository
+import com.example.petpassport_android_app.domain.repository.EventTemplateRepository
 import com.example.petpassport_android_app.domain.repository.OwnerRepository
 import com.example.petpassport_android_app.domain.repository.PetRepository
 import com.example.petpassport_android_app.presentation.screens.home.PetListScreenModel
@@ -40,6 +42,12 @@ abstract class RepositoryModule {
     abstract fun bindEventMedicineRepository(
         eventMedicineRepositoryImpl: EventMedicineRepositoryImpl
     ): EventMedicineRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindEventTemplateRepository(
+        eventTemplateRepositoryImpl: EventTemplateRepositoryImpl
+    ): EventTemplateRepository
 
     @Binds
     @Singleton

@@ -27,6 +27,8 @@ import com.example.petpassport_android_app.domain.model.Event.Vaccine
 import com.example.petpassport_android_app.presentation.screens.eventDetail.EventDetailScreenContent
 import com.example.petpassport_android_app.presentation.screens.events.EventsScreenContent
 import com.example.petpassport_android_app.presentation.screens.events.EventsScreenModel
+import com.example.petpassport_android_app.presentation.screens.events.RecommendedProceduresScreenContent
+import com.example.petpassport_android_app.presentation.screens.events.RecommendedProceduresScreenModel
 import com.example.petpassport_android_app.presentation.screens.events.eventDetails.EventDetailScreenModel
 import com.example.petpassport_android_app.presentation.screens.login.LoginScreenContent
 import com.example.petpassport_android_app.presentation.screens.login.LoginScreenModel
@@ -195,6 +197,14 @@ class PetProfileNavigationScreen(
                 }
                 navigator.push(MedicalHistoryNavigationScreen(petId = petId, petName = petName))
             },
+            onOpenRecommended = {
+                val petName = when (val s = state) {
+                    is PetProfileScreenModel.State.View -> s.pet.name
+                    is PetProfileScreenModel.State.Edit -> s.pet.name
+                    else -> ""
+                }
+                navigator.push(RecommendedProceduresNavigationScreen(petId = petId, petName = petName))
+            },
             onEventClick = { event ->
                 val petName = when (val s = state) {
                     is PetProfileScreenModel.State.View -> s.pet.name
@@ -304,6 +314,29 @@ class MedicalHistoryNavigationScreen(
             onEventReminderToggle = { ev, enabled ->
                 model.onEventReminderToggle(context, ev, enabled)
             }
+        )
+    }
+}
+
+class RecommendedProceduresNavigationScreen(
+    private val petId: Int,
+    private val petName: String,
+) : Screen {
+
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val model = getScreenModel<RecommendedProceduresScreenModel>()
+        val state by model.state.collectAsState()
+
+        LaunchedEffect(petId) {
+            model.load()
+        }
+
+        RecommendedProceduresScreenContent(
+            state = state,
+            petName = petName,
+            onBack = { navigator.pop() }
         )
     }
 }

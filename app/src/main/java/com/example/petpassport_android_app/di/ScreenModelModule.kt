@@ -3,6 +3,7 @@ package com.example.petpassport_android_app.di
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.hilt.ScreenModelKey
 import com.example.petpassport_android_app.presentation.screens.events.EventsScreenModel
+import com.example.petpassport_android_app.presentation.screens.events.RecommendedProceduresScreenModel
 import com.example.petpassport_android_app.presentation.screens.events.eventDetails.EventDetailScreenModel
 import com.example.petpassport_android_app.presentation.screens.home.PetListScreenModel
 import com.example.petpassport_android_app.presentation.screens.login.LoginScreenModel
@@ -48,6 +49,11 @@ abstract class ScreenModelModule {
     @IntoMap
     @ScreenModelKey(EventDetailScreenModel::class)
     abstract fun bindEventDetailScreenModel(model: EventDetailScreenModel): ScreenModel
+
+    @Binds
+    @IntoMap
+    @ScreenModelKey(RecommendedProceduresScreenModel::class)
+    abstract fun bindRecommendedProceduresScreenModel(model: RecommendedProceduresScreenModel): ScreenModel
 
 
 }

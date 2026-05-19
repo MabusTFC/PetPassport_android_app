@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import com.example.petpassport_android_app.BuildConfig
 import com.example.petpassport_android_app.data.api.AuthApiService
 import com.example.petpassport_android_app.data.api.DoctorVisitApiService
+import com.example.petpassport_android_app.data.api.EventTemplateApiService
 import com.example.petpassport_android_app.data.api.EventsApiService
 import com.example.petpassport_android_app.data.api.OwnerApiService
 import com.example.petpassport_android_app.data.api.PetApiService
@@ -102,6 +103,12 @@ object NetworkModule {
         return retrofit.create(DoctorVisitApiService::class.java)
     }
 
+    //Шаблоны рекомендуемых процедур
+    @Provides
+    @Singleton
+    fun provideEventTemplateApi(retrofit: Retrofit): EventTemplateApiService {
+        return retrofit.create(EventTemplateApiService::class.java)
+    }
 
     //Сохр данных в файл
     @Provides

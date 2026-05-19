@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,6 +47,7 @@ fun PetProfileCard(
     onEditProfile: () -> Unit,
     onOpenEvents: () -> Unit,
     onOpenHistory: () -> Unit = {},
+    onOpenRecommended: () -> Unit = {},
     onEventClick: (PetEvent) -> Unit = {},
     onAddEvent: (PetEvent, EventReminderUiPayload) -> Unit = { _, _ -> },
     globalNotificationsEnabled: Boolean = true,
@@ -151,14 +153,27 @@ fun PetProfileCard(
                 Spacer(Modifier.height(12.dp))
 
                 OutlinedButton(
-                    onClick = onEditProfile,
+                    onClick = onOpenRecommended,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
                     shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, Color(0xFFD1D1D1))
                 ) {
-                    Text("Изменить данные", color = NewPrimaryDark)
+                    Text("Рекомендуемые процедуры", color = NewPrimaryDark, fontWeight = FontWeight.Bold)
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                TextButton(
+                    onClick = onEditProfile,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        "Изменить данные",
+                        color = Color.Gray,
+                        textDecoration = TextDecoration.Underline
+                    )
                 }
             }
         }
